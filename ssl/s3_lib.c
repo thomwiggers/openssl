@@ -73,7 +73,7 @@ static SSL_CIPHER tls13_ciphers[] = {
         SSL_aANY,
         SSL_CHACHA20POLY1305,
         SSL_AEAD,
-        TLS1_3_VERSION, TLS1_3_VERSION,
+        TLS1_3_VERSION, OPTLS_VERSION,
         0, 0,
         SSL_HIGH,
         SSL_HANDSHAKE_MAC_SHA256,
