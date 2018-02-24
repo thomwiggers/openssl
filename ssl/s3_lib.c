@@ -4763,9 +4763,14 @@ EVP_PKEY *ssl_generate_param_group(uint16_t id)
 int ssl_derive(SSL *s, EVP_PKEY *privkey, EVP_PKEY *pubkey, int gensecret)
 {
     int rv = 0;
+    int gsalloc = 0;
     unsigned char *pms = NULL;
+    unsigned char *ssk = NULL;
     size_t pmslen = 0;
+    size_t ssklen = 0;
     EVP_PKEY_CTX *pctx;
+    EVP_PKEY_CTX *gsctx;
+    EVP_PKEY *gs;
 
     if (privkey == NULL || pubkey == NULL) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_SSL_DERIVE,
@@ -4798,7 +4803,59 @@ int ssl_derive(SSL *s, EVP_PKEY *privkey, EVP_PKEY *pubkey, int gensecret)
 
     if (gensecret) {
         /* SSLfatal() called as appropriate in the below functions */
-        if (SSL_IS_TLS13(s)) {
+        if (SSL_IS_OPTLS(s)) {
+        /* If we are the server and not resuming we still need to generate the
+         * Static Secret. It fits within the TLS1.3 framework if we save it in
+         * s->early_secret.
+         */
+            if (s->server && !s->hit) {
+                /* This is s */
+                gs = s->s3->tmp.cert->privatekey;
+                if (gs == NULL || pubkey == NULL) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_SSL_DERIVE,
+                             ERR_R_INTERNAL_ERROR);
+                    return 0;
+                }
+
+                gsctx = EVP_PKEY_CTX_new(gs, NULL);
+                if (gsctx == NULL) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_SSL_DERIVE,
+                             ERR_R_MALLOC_FAILURE);
+                    goto err;
+                }
+                gsalloc = 1;
+
+                if (EVP_PKEY_derive_init(gsctx) <= 0
+                    || EVP_PKEY_derive_set_peer(gsctx, pubkey) <= 0
+                    || EVP_PKEY_derive(gsctx, NULL, &ssklen) <= 0) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_SSL_DERIVE,
+                             ERR_R_INTERNAL_ERROR);
+                    goto err;
+                }
+
+                ssk = OPENSSL_malloc(ssklen);
+                if (ssk == NULL) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_SSL_DERIVE,
+                             ERR_R_MALLOC_FAILURE);
+                    goto err;
+                }
+
+                if (EVP_PKEY_derive(gsctx, ssk, &ssklen) <= 0) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_SSL_DERIVE,
+                             ERR_R_INTERNAL_ERROR);
+                    goto err;
+                }
+                rv = optls_generate_secret(s, ssl_handshake_md(s), NULL, ssk,
+                        ssklen, (unsigned char *)&s->early_secret);
+            } else
+                rv = 1;
+            /*
+             * If this function is called we always need to use g^{xy} to
+             * generate the handshake secret.
+             */
+             rv = rv & optls_generate_secret(s, ssl_handshake_md(s), NULL, pms,
+                     pmslen, (unsigned char *)&s->handshake_secret);
+        } else if (SSL_IS_TLS13(s)) {
             /*
              * If we are resuming then we already generated the early secret
              * when we created the ClientHello, so don't recreate it.
@@ -4824,7 +4881,10 @@ int ssl_derive(SSL *s, EVP_PKEY *privkey, EVP_PKEY *pubkey, int gensecret)
 
  err:
     OPENSSL_clear_free(pms, pmslen);
+    OPENSSL_clear_free(ssk, ssklen);
     EVP_PKEY_CTX_free(pctx);
+    if (gsalloc)
+        EVP_PKEY_CTX_free(gsctx);
     return rv;
 }
 

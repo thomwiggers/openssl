@@ -1264,6 +1264,9 @@ static int final_sig_algs(SSL *s, unsigned int context, int sent)
 #ifndef OPENSSL_NO_EC
 static int final_key_share(SSL *s, unsigned int context, int sent)
 {
+    const EVP_MD *md = NULL;
+    size_t hashsize;
+
     if (!SSL_IS_TLS13(s))
         return 1;
 
@@ -1415,10 +1418,29 @@ static int final_key_share(SSL *s, unsigned int context, int sent)
          * the handshake secret (otherwise this is done during key_share
          * processing).
          */
-        if (!sent && !tls13_generate_handshake_secret(s, NULL, 0)) {
-            SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_FINAL_KEY_SHARE,
-                     ERR_R_INTERNAL_ERROR);
-            return 0;
+        if (!sent) {
+            if (SSL_IS_OPTLS(s)) {
+                if (s->psksession != NULL)
+                    md = ssl_md(s->psksession->cipher->algorithm2);
+                else
+                    md = ssl_md(s->session->cipher->algorithm2);
+                if (md == NULL) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_FINAL_KEY_SHARE,
+                            ERR_R_INTERNAL_ERROR);
+                    return 0;
+                }
+                hashsize = EVP_MD_size(md);
+                if (!optls_generate_secret(s, md, NULL, s->psk, hashsize,
+                                           s->handshake_secret)) {
+                    SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_FINAL_KEY_SHARE,
+                            ERR_R_INTERNAL_ERROR);
+                    return 0;
+                }
+            } else if (!tls13_generate_handshake_secret(s, NULL, 0)) {
+                SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_FINAL_KEY_SHARE,
+                         ERR_R_INTERNAL_ERROR);
+                return 0;
+            }
         }
     }
 
@@ -1471,6 +1493,9 @@ int tls_psk_do_binder(SSL *s, const EVP_MD *md, const unsigned char *msgstart,
         label = resumption_label;
         labelsize = sizeof(resumption_label) - 1;
     }
+
+    if ((s->ext.psk_kex_mode & TLSEXT_KEX_MODE_FLAG_KE) != 0)
+        memcpy(s->psk, sess->master_key, sess->master_key_length);
 
     /*
      * Generate the early_secret. On the server side we've selected a PSK to

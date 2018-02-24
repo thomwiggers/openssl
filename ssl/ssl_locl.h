@@ -201,6 +201,8 @@
 # define SSL_aSRP                0x00000040U
 /* GOST R 34.10-2012 signature auth */
 # define SSL_aGOST12             0x00000080U
+/* DH signed certificate auth */
+# define SSL_aDH                 0x00000100U
 /* Any appropriate signature auth (for TLS 1.3 ciphersuites) */
 # define SSL_aANY                0x00000000U
 /* All bits requiring a certificate */
@@ -388,7 +390,15 @@
 # define SSL_PKEY_GOST12_512     6
 # define SSL_PKEY_ED25519        7
 # define SSL_PKEY_ED448          8
-# define SSL_PKEY_NUM            9
+# define SSL_PKEY_X25519         9
+# define SSL_PKEY_NUM            10
+/* Where DH certificates start */
+# define SSL_PKEY_DH_CERT_START  9
+/*
+ * Pseudo-constant. GOST cipher suites can use different certs for 1
+ * SSL_CIPHER. So let's see which one we have in fact.
+ */
+# define SSL_PKEY_GOST_EC SSL_PKEY_NUM+1
 
 /*-
  * SSL_kRSA <- RSA_ENC
@@ -1165,6 +1175,7 @@ struct ssl_st {
     unsigned char server_app_traffic_secret[EVP_MAX_MD_SIZE];
     unsigned char exporter_master_secret[EVP_MAX_MD_SIZE];
     unsigned char early_exporter_master_secret[EVP_MAX_MD_SIZE];
+    unsigned char psk[EVP_MAX_MD_SIZE];
     EVP_CIPHER_CTX *enc_read_ctx; /* cryptographic state */
     unsigned char read_iv[EVP_MAX_IV_LENGTH]; /* TLSv1.3 static read IV */
     EVP_MD_CTX *read_hash;      /* used for mac generation */
