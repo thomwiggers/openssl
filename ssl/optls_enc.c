@@ -143,8 +143,10 @@ int optls_generate_secret(SSL *s, const EVP_MD *md,
     mdlen = EVP_MD_size(md);
 
     if (insecret == NULL) {
-        insecret = default_zeros;
-        insecretlen = mdlen;
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_OPTLS_GENERATE_SECRET,
+                ERR_R_INTERNAL_ERROR);
+            EVP_PKEY_CTX_free(pctx);
+            return 0;
     }
     if (prevsecret == NULL) {
         prevsecret = default_zeros;
@@ -201,8 +203,7 @@ int optls_generate_secret(SSL *s, const EVP_MD *md,
 
 /*
  * Given an input secret |insecret| of length |insecretlen| generate the
- * handshake secret. This requires the early secret to already have been
- * generated. Returns 1 on success  0 on failure.
+ * handshake secret. Returns 1 on success  0 on failure.
  */
 int optls_generate_handshake_secret(SSL *s, const unsigned char *insecret,
                                 size_t insecretlen)
@@ -214,19 +215,45 @@ int optls_generate_handshake_secret(SSL *s, const unsigned char *insecret,
 }
 
 /*
- * Given the handshake secret |prev| of length |prevlen| generate the master
- * secret and store its length in |*secret_size|. Returns 1 on success  0 on
- * failure.
+ * Given the early secret |prev| of length |prevlen| generate the master secret
+ * and store its length in |*secret_size|. Returns 1 on success 0 on failure.
  */
 int optls_generate_master_secret(SSL *s, unsigned char *out,
                                  unsigned char *prev, size_t prevlen,
                                  size_t *secret_size)
 {
     const EVP_MD *md = ssl_handshake_md(s);
+    size_t mdlen = EVP_MD_size(md);
 
     *secret_size = EVP_MD_size(md);
+    EVP_MD_CTX *mctx = EVP_MD_CTX_new();
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    static const char derived_secret_label[] = "derived";
+    unsigned char * insecret = s->handshake_secret;
+    unsigned char preextractinsec[EVP_MAX_MD_SIZE];
+
+    /* The pre-extract derive step uses a hash of no messages */
+    if (mctx == NULL
+            || insecret == NULL
+            || EVP_DigestInit_ex(mctx, md, NULL) <= 0
+            || EVP_DigestFinal_ex(mctx, hash, NULL) <= 0) {
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_OPTLS_GENERATE_MASTER_SECRET,
+                ERR_R_INTERNAL_ERROR);
+        EVP_MD_CTX_free(mctx);
+        return 0;
+    }
+    EVP_MD_CTX_free(mctx);
+
+    /* Generate the pre-extract secret */
+    if (!optls_hkdf_expand(s, md, insecret,
+                (unsigned char *)derived_secret_label,
+                sizeof(derived_secret_label) - 1, hash, mdlen,
+                preextractinsec, mdlen)) {
+        /* SSLfatal() already called */
+        return 0;
+    }
     /* Calls SSLfatal() if required */
-    return optls_generate_secret(s, md, prev, NULL, 0, out);
+    return optls_generate_secret(s, md, prev, preextractinsec, mdlen, out);
 }
 
 /*
@@ -249,10 +276,10 @@ size_t optls_final_finish_mac(SSL *s, const char *str, size_t slen,
 
     if (str == s->method->ssl3_enc->server_finished_label)
         key = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL,
-                                   s->server_finished_secret, hashlen);
+                                   s->early_secret, hashlen);
     else
         key = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL,
-                                   s->client_finished_secret, hashlen);
+                                   s->early_secret, hashlen);
 
     if (key == NULL
             || ctx == NULL
