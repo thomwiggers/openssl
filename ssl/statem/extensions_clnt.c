@@ -1768,7 +1768,7 @@ int tls_parse_stoc_supported_versions(SSL *s, PACKET *pkt, unsigned int context,
      * The only protocol version we support which is valid in this extension in
      * a ServerHello is TLSv1.3 therefore we shouldn't be getting anything else.
      */
-    if ((version != TLS1_3_VERSION && version != OPTLS_VERSION)) {
+    if (version != TLS1_3_VERSION && version != OPTLS_VERSION) {
         SSLfatal(s, SSL_AD_ILLEGAL_PARAMETER,
                  SSL_F_TLS_PARSE_STOC_SUPPORTED_VERSIONS,
                  SSL_R_BAD_PROTOCOL_VERSION_NUMBER);
