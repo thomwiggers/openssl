@@ -209,7 +209,7 @@ static int psk_use_session_cb(SSL *s, const EVP_MD *md,
         if (usesess == NULL
                 || !SSL_SESSION_set1_master_key(usesess, key, key_len)
                 || !SSL_SESSION_set_cipher(usesess, cipher)
-                || !SSL_SESSION_set_protocol_version(usesess, TLS1_3_VERSION)) {
+                || !SSL_SESSION_set_protocol_version(usesess, SSL_version(s))) {
             OPENSSL_free(key);
             goto err;
         }
