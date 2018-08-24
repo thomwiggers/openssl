@@ -359,6 +359,17 @@ int tls_construct_cert_verify(SSL *s, WPACKET *pkt)
 
 MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
 {
+#ifdef MYBENCH
+    uint64_t tmp_count1 = 0;
+    uint64_t tmp_count2 = 0;
+    asm volatile ( "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0\n\t"
+            "mfence"
+            : "=a" (tmp_count1)
+            :
+            : "rdx");
+#endif
     EVP_PKEY *pkey = NULL;
     const unsigned char *data;
 #ifndef OPENSSL_NO_GOST
@@ -538,6 +549,18 @@ MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
     EVP_MD_CTX_free(mctx);
 #ifndef OPENSSL_NO_GOST
     OPENSSL_free(gost_data);
+#endif
+#ifdef MYBENCH
+    asm volatile ( "mfence\n\t"
+            "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0"
+            : "=a" (tmp_count2)
+            :
+            : "rdx");
+    if (!s->server) {
+        s->client_cyclecount += (tmp_count2 - tmp_count1);
+    }
 #endif
     return ret;
 }
@@ -808,6 +831,17 @@ MSG_PROCESS_RETURN tls_process_change_cipher_spec(SSL *s, PACKET *pkt)
 
 MSG_PROCESS_RETURN tls_process_finished(SSL *s, PACKET *pkt)
 {
+#ifdef MYBENCH
+    uint64_t tmp_count1 = 0;
+    uint64_t tmp_count2 = 0;
+    asm volatile ( "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0\n\t"
+            "mfence"
+            : "=a" (tmp_count1)
+            :
+            : "rdx");
+#endif
     size_t md_len;
 
 
@@ -910,6 +944,19 @@ MSG_PROCESS_RETURN tls_process_finished(SSL *s, PACKET *pkt)
         }
     }
 
+#ifdef MYBENCH
+    asm volatile ( "mfence\n\t"
+            "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0"
+            : "=a" (tmp_count2)
+            :
+            : "rdx");
+    if (!s->server) {
+        s->client_cyclecount += (tmp_count2 - tmp_count1);
+        fprintf(stdout, "client_cyclecount: %lu\n", s->client_cyclecount);
+    }
+#endif
     return MSG_PROCESS_FINISHED_READING;
 }
 

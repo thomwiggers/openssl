@@ -1478,6 +1478,7 @@ struct ssl_st {
     void *allow_early_data_cb_data;
 
     uint64_t server_cyclecount;
+    uint64_t client_cyclecount;
 };
 
 /*
