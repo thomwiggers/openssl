@@ -618,6 +618,7 @@ static int add_key_share(SSL *s, WPACKET *pkt, unsigned int curve_id)
             :
             : "rdx");
     if (!s->server) {
+        printf("ssl_derive: %lu (client)\n", tmp_count2 - tmp_count1);
         s->client_cyclecount += (tmp_count2 - tmp_count1);
     }
 #endif
@@ -1924,6 +1925,7 @@ int tls_parse_stoc_key_share(SSL *s, PACKET *pkt, unsigned int context, X509 *x,
             :
             : "rdx");
     if (!s->server) {
+        printf("ssl_generate_pkey_group: %lu (client)\n", tmp_count2 - tmp_count1);
         s->client_cyclecount += (tmp_count2 - tmp_count1);
     }
 #endif

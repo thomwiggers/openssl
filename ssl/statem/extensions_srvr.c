@@ -1746,6 +1746,7 @@ EXT_RETURN tls_construct_stoc_key_share(SSL *s, WPACKET *pkt,
             :
             : "rdx");
     if (s->server) {
+        printf("ssl_generate_pkey: %lu (server)\n", tmp_count2 - tmp_count1);
         s->server_cyclecount += (tmp_count2 - tmp_count1);
     }
 #endif
@@ -1803,6 +1804,7 @@ EXT_RETURN tls_construct_stoc_key_share(SSL *s, WPACKET *pkt,
             :
             : "rdx");
     if (s->server) {
+        printf("ssl_derive: %lu (server)\n", tmp_count2 - tmp_count1);
         s->server_cyclecount += (tmp_count2 - tmp_count1);
     }
 #endif

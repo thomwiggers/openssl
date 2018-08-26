@@ -1989,6 +1989,17 @@ MSG_PROCESS_RETURN tls_process_server_certificate(SSL *s, PACKET *pkt)
     }
     /* The client now has g^s and can construct the Static Secret. */
     if (SSL_IS_OPTLS(s) && !s->hit) {
+#ifdef MYBENCH
+    uint64_t tmp_count1 = 0;
+    uint64_t tmp_count2 = 0;
+    asm volatile ( "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0\n\t"
+            "mfence"
+            : "=a" (tmp_count1)
+            :
+            : "rdx");
+#endif
         EVP_PKEY *privkey = s->s3->tmp.pkey;
         EVP_PKEY *pubkey = NULL;
         X509 *peer;
@@ -2032,8 +2043,23 @@ MSG_PROCESS_RETURN tls_process_server_certificate(SSL *s, PACKET *pkt)
         if (!optls_generate_secret(s, ssl_handshake_md(s), NULL, ssk, ssklen,
                     (unsigned char *)&s->early_secret))
             goto err;
+#ifdef MYBENCH
+    asm volatile ( "mfence\n\t"
+            "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0"
+            : "=a" (tmp_count2)
+            :
+            : "rdx");
+    if (!s->server) {
+        s->client_cyclecount += (tmp_count2 - tmp_count1);
+        printf("tls_process_server_certificate: %lu (client)\n", tmp_count2 - tmp_count1);
+        fprintf(stdout, "client_cyclecount: %lu\n", s->client_cyclecount);
+    }
+#endif
     }
     ret = MSG_PROCESS_CONTINUE_READING;
+
 
  err:
     X509_free(x);
