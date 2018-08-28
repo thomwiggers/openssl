@@ -563,7 +563,7 @@ EXT_RETURN tls_construct_ctos_psk_kex_modes(SSL *s, WPACKET *pkt,
             || !WPACKET_start_sub_packet_u16(pkt)
             || !WPACKET_start_sub_packet_u8(pkt)
             || !WPACKET_put_bytes_u8(pkt, TLSEXT_KEX_MODE_KE_DHE)
-            /* || !WPACKET_put_bytes_u8(pkt, TLSEXT_KEX_MODE_KE) */
+            || (nodhe && !WPACKET_put_bytes_u8(pkt, TLSEXT_KEX_MODE_KE))
             || !WPACKET_close(pkt)
             || !WPACKET_close(pkt)) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR,
@@ -618,7 +618,7 @@ static int add_key_share(SSL *s, WPACKET *pkt, unsigned int curve_id)
             :
             : "rdx");
     if (!s->server) {
-        printf("ssl_derive: %lu (client)\n", tmp_count2 - tmp_count1);
+        printf("ssl_generate_pkey_group: %lu (client)\n", tmp_count2 - tmp_count1);
         s->client_cyclecount += (tmp_count2 - tmp_count1);
     }
 #endif
@@ -1925,7 +1925,7 @@ int tls_parse_stoc_key_share(SSL *s, PACKET *pkt, unsigned int context, X509 *x,
             :
             : "rdx");
     if (!s->server) {
-        printf("ssl_generate_pkey_group: %lu (client)\n", tmp_count2 - tmp_count1);
+        printf("ssl_derive: %lu (client)\n", tmp_count2 - tmp_count1);
         s->client_cyclecount += (tmp_count2 - tmp_count1);
     }
 #endif
