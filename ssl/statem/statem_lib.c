@@ -409,17 +409,6 @@ int tls_construct_cert_verify(SSL *s, WPACKET *pkt)
 
 MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
 {
-#ifdef MYBENCH
-    uint64_t tmp_count1 = 0;
-    uint64_t tmp_count2 = 0;
-    asm volatile ( "rdtsc\n\t"
-            "shl $32, %%rdx\n\t"
-            "or %%rdx, %0\n\t"
-            "mfence"
-            : "=a" (tmp_count1)
-            :
-            : "rdx");
-#endif
     EVP_PKEY *pkey = NULL;
     const unsigned char *data;
 #ifndef OPENSSL_NO_GOST
@@ -537,6 +526,17 @@ MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
     fprintf(stderr, "Using client verify alg %s\n", EVP_MD_name(md));
 #endif
 
+#ifdef MYBENCH
+    uint64_t tmp_count1 = 0;
+    uint64_t tmp_count2 = 0;
+    asm volatile ( "rdtsc\n\t"
+            "shl $32, %%rdx\n\t"
+            "or %%rdx, %0\n\t"
+            "mfence"
+            : "=a" (tmp_count1)
+            :
+            : "rdx");
+#endif
     if (s->s3->tmp.peer_sigalg->sig_idx >= SSL_PKEY_DH_CERT_START) {
         /* Build static secret and verify MAC - Client side */
         size_t sslen = 0;
@@ -683,28 +683,6 @@ MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
             }
         }
     }
-
-    /*
-     * In TLSv1.3 on the client side we make sure we prepare the client
-     * certificate after the CertVerify instead of when we get the
-     * CertificateRequest. This is because in TLSv1.3 the CertificateRequest
-     * comes *before* the Certificate message. In TLSv1.2 it comes after. We
-     * want to make sure that SSL_get_peer_certificate() will return the actual
-     * server certificate from the client_cert_cb callback.
-     */
-    if (!s->server && SSL_IS_TLS13(s) && s->s3->tmp.cert_req == 1)
-        ret = MSG_PROCESS_CONTINUE_PROCESSING;
-    else
-        ret = MSG_PROCESS_CONTINUE_READING;
- err:
-    BIO_free(s->s3->handshake_buffer);
-    s->s3->handshake_buffer = NULL;
-    if (palloc)
-        EVP_PKEY_CTX_free(pctx);
-    EVP_MD_CTX_free(mctx);
-#ifndef OPENSSL_NO_GOST
-    OPENSSL_free(gost_data);
-#endif
 #ifdef MYBENCH
     asm volatile ( "mfence\n\t"
             "rdtsc\n\t"
@@ -717,6 +695,17 @@ MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
         printf("tls_process_cert_verify: %lu (client)\n", tmp_count2 - tmp_count1);
         s->client_cyclecount += (tmp_count2 - tmp_count1);
     }
+#endif
+
+    ret = MSG_PROCESS_CONTINUE_READING;
+ err:
+    BIO_free(s->s3->handshake_buffer);
+    s->s3->handshake_buffer = NULL;
+    if (palloc)
+        EVP_PKEY_CTX_free(pctx);
+    EVP_MD_CTX_free(mctx);
+#ifndef OPENSSL_NO_GOST
+    OPENSSL_free(gost_data);
 #endif
     return ret;
 }
