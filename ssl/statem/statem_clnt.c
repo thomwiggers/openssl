@@ -2063,7 +2063,6 @@ MSG_PROCESS_RETURN tls_process_server_certificate(SSL *s, PACKET *pkt)
     if (!s->server) {
         s->client_cyclecount += (tmp_count2 - tmp_count1);
         printf("tls_process_server_certificate: %lu (client)\n", tmp_count2 - tmp_count1);
-        fprintf(stdout, "client_cyclecount: %lu\n", s->client_cyclecount);
     }
 #endif
     }
