@@ -866,7 +866,7 @@ static int new_session_cb(SSL *s, SSL_SESSION *sess)
      * Session data gets dumped on connection for TLSv1.2 and below, and on
      * arrival of the NewSessionTicket for TLSv1.3.
      */
-    if (SSL_version(s) == TLS1_3_VERSION) {
+    if (SSL_version(s) == TLS1_3_VERSION || SSL_version(s) == OPTLS_VERSION) {
         BIO_printf(bio_c_out,
                    "---\nPost-Handshake New Session Ticket arrived:\n");
         SSL_SESSION_print(bio_c_out, sess);
@@ -1542,7 +1542,8 @@ int s_client_main(int argc, char **argv)
     }
 
 #ifndef OPENSSL_NO_NEXTPROTONEG
-    if (min_version == TLS1_3_VERSION && next_proto_neg_in != NULL) {
+    if ((min_version == TLS1_3_VERSION || min_version == OPTLS_VERSION)
+            && next_proto_neg_in != NULL) {
         BIO_printf(bio_err, "Cannot supply -nextprotoneg with TLSv1.3\n");
         goto opthelp;
     }
@@ -3145,7 +3146,8 @@ static void print_stuff(BIO *bio, SSL *s, int full)
     X509 *peer = NULL;
     STACK_OF(X509) *sk;
     const SSL_CIPHER *c;
-    int i, istls13 = (SSL_version(s) == TLS1_3_VERSION);
+    int i, istls13 = (SSL_version(s) == TLS1_3_VERSION
+            || SSL_version(s) == OPTLS_VERSION);
     long verify_result;
 #ifndef OPENSSL_NO_COMP
     const COMP_METHOD *comp, *expansion;
