@@ -37,7 +37,8 @@ int SSL_SESSION_print(BIO *bp, const SSL_SESSION *x)
 
     if (x == NULL)
         goto err;
-    istls13 = (x->ssl_version == TLS1_3_VERSION);
+    istls13 = (x->ssl_version == TLS1_3_VERSION
+            || x->ssl_version == OPTLS_VERSION);
     if (BIO_puts(bp, "SSL-Session:\n") <= 0)
         goto err;
     s = ssl_protocol_to_string(x->ssl_version);
