@@ -17,14 +17,18 @@
 #include <oqs/oqs.h>
 
 /* Only supports OQS's master branch signature API for now */
-#if !defined(OQS_NIST_BRANCH)
 
 /*
  * OQS context
  */
 typedef struct
 {
+#ifndef OQS_NIST_BRANCH
   OQS_SIG *s;
+#else
+  OQS_KEM *s;  //TODO(OQS) support signatures in the OQS_NIST_BRANCH
+#endif
+  OQS_KEM *k;
   uint8_t *pubkey;
   uint8_t *privkey;
   int security_bits;
@@ -45,6 +49,7 @@ static char* get_oqs_alg_name(int openssl_nid)
 {
   switch (openssl_nid)
     {
+#ifndef OQS_NIST_BRANCH
     case NID_picnicL1FS:
       return OQS_SIG_alg_picnic_L1_FS;
     case NID_qTESLA_I:
@@ -53,7 +58,10 @@ static char* get_oqs_alg_name(int openssl_nid)
       return OQS_SIG_alg_qTESLA_III_size;
     case NID_qTESLA_III_speed:
       return OQS_SIG_alg_qTESLA_III_speed;
+#endif
     /* ADD_MORE_OQS_SIG_HERE */
+    case NID_kyber512:
+      return OQS_KEM_alg_kyber512;
     default:
       return NULL;
     }
@@ -66,6 +74,7 @@ static int get_oqs_security_bits(int openssl_nid)
 {
   switch (openssl_nid)
     {
+#ifndef OQS_NIST_BRANCH
     case NID_picnicL1FS:
       return 128;
     case NID_qTESLA_I:
@@ -74,7 +83,10 @@ static int get_oqs_security_bits(int openssl_nid)
       return 192;
     case NID_qTESLA_III_speed:
       return 192;
+#endif
     /* ADD_MORE_OQS_SIG_HERE */
+    case NID_kyber512:
+      return 128; // FIXME(Thom) Actual security
     default:
       return -1;
     }
@@ -88,9 +100,15 @@ static void oqs_pkey_ctx_free(OQS_KEY* key) {
   if (key == NULL) {
     return;
   }
+#ifndef OQS_NIST_BRANCH
   if (key->s) {
     privkey_len = key->s->length_secret_key;
     OQS_SIG_free(key->s);
+  }
+#endif
+  if (key->k) {
+    privkey_len = key->k->length_secret_key;
+    OQS_KEM_free(key->k);
   }
   if (key->privkey) {
     OPENSSL_secure_clear_free(key->privkey, privkey_len);
@@ -109,34 +127,64 @@ static int oqs_key_init(OQS_KEY **p_oqs_key, int nid, oqs_key_type_t keytype) {
     OQS_KEY *oqs_key = NULL;
     const char* oqs_alg_name = get_oqs_alg_name(nid);
 
-    oqs_key = OPENSSL_zalloc(sizeof(*oqs_key));
-    if (oqs_key == NULL) {
-      OQSerr(0, ERR_R_MALLOC_FAILURE);
-      goto err;
+    if (nid == NID_kyber512) {
+        oqs_key = OPENSSL_zalloc(sizeof(*oqs_key));
+        if (oqs_key == NULL) {
+            OQSerr(0, ERR_R_MALLOC_FAILURE);
+            goto err;
+        }
+        oqs_key->k = OQS_KEM_new(oqs_alg_name);
+        if (oqs_key->s == NULL) {
+            OQSerr(0, ERR_R_FATAL);
+            goto err;
+        }
+        oqs_key->pubkey = OPENSSL_malloc(oqs_key->k->length_public_key);
+        if (oqs_key->pubkey == NULL) {
+            OQSerr(0, ERR_R_MALLOC_FAILURE);
+            goto err;
+        }
+        if (keytype == KEY_TYPE_PRIVATE) {
+            oqs_key->privkey = OPENSSL_secure_malloc(oqs_key->k->length_secret_key);
+            if (oqs_key->privkey == NULL) {
+                OQSerr(0, ERR_R_MALLOC_FAILURE);
+                goto err;
+            }
+        }
+        oqs_key->security_bits = get_oqs_security_bits(nid);
+        *p_oqs_key = oqs_key;
+        return 1;
+    } else {
+#ifndef OQS_NIST_BRANCH
+        oqs_key = OPENSSL_zalloc(sizeof(*oqs_key));
+        if (oqs_key == NULL) {
+            OQSerr(0, ERR_R_MALLOC_FAILURE);
+            goto err;
+        }
+        oqs_key->s = OQS_SIG_new(oqs_alg_name);
+        if (oqs_key->s == NULL) {
+            /* TODO: provide a better error message for non-enabled OQS schemes.
+               Perhaps even check if the alg is available earlier in the stack. (FIXMEOQS) */
+            OQSerr(0, ERR_R_FATAL);
+            goto err;
+        }
+        oqs_key->pubkey = OPENSSL_malloc(oqs_key->s->length_public_key);
+        if (oqs_key->pubkey == NULL) {
+            OQSerr(0, ERR_R_MALLOC_FAILURE);
+            goto err;
+        }
+        /* Optionally allocate the private key */
+        if (keytype == KEY_TYPE_PRIVATE) {
+            oqs_key->privkey = OPENSSL_secure_malloc(oqs_key->s->length_secret_key);
+            if (oqs_key->privkey == NULL) {
+                OQSerr(0, ERR_R_MALLOC_FAILURE);
+                goto err;
+            }
+        }
+        oqs_key->security_bits = get_oqs_security_bits(nid);
+        *p_oqs_key = oqs_key;
+        return 1;
+#endif
     }
-    oqs_key->s = OQS_SIG_new(oqs_alg_name);
-    if (oqs_key->s == NULL) {
-      /* TODO: provide a better error message for non-enabled OQS schemes.
-	 Perhaps even check if the alg is available earlier in the stack. (FIXMEOQS) */
-      OQSerr(0, ERR_R_FATAL);
-      goto err;
-    }
-    oqs_key->pubkey = OPENSSL_malloc(oqs_key->s->length_public_key);
-    if (oqs_key->pubkey == NULL) {
-      OQSerr(0, ERR_R_MALLOC_FAILURE);
-      goto err;
-    }
-    /* Optionally allocate the private key */
-    if (keytype == KEY_TYPE_PRIVATE) {
-      oqs_key->privkey = OPENSSL_secure_malloc(oqs_key->s->length_secret_key);
-      if (oqs_key->privkey == NULL) {
-	OQSerr(0, ERR_R_MALLOC_FAILURE);
-	goto err;
-      }
-    }
-    oqs_key->security_bits = get_oqs_security_bits(nid);
-    *p_oqs_key = oqs_key;
-    return 1;
 
  err:
     oqs_pkey_ctx_free(oqs_key);
@@ -147,19 +195,26 @@ static int oqs_pub_encode(X509_PUBKEY *pk, const EVP_PKEY *pkey)
 {
     const OQS_KEY *oqs_key = (OQS_KEY*) pkey->pkey.ptr;
     unsigned char *penc;
-    if (!oqs_key || !oqs_key->s || !oqs_key->pubkey ) {
+    size_t public_keylength = 0;
+    if (oqs_key->k != NULL) {
+        public_keylength = oqs_key->k->length_public_key;
+    }
+    if (oqs_key->s != NULL) {
+        public_keylength = oqs_key->s->length_public_key;
+    }
+    if (!oqs_key || !(oqs_key->s || oqs_key->k) || !oqs_key->pubkey ) {
       OQSerr(0, ERR_R_FATAL);
       return 0;
     }
 
-    penc = OPENSSL_memdup(oqs_key->pubkey, oqs_key->s->length_public_key);
+    penc = OPENSSL_memdup(oqs_key->pubkey, public_keylength);
     if (penc == NULL) {
         OQSerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
 
     if (!X509_PUBKEY_set0_param(pk, OBJ_nid2obj(pkey->ameth->pkey_id),
-                                V_ASN1_UNDEF, NULL, penc, oqs_key->s->length_public_key)) {
+                                V_ASN1_UNDEF, NULL, penc, public_keylength)) {
         OPENSSL_free(penc);
         OQSerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
@@ -201,7 +256,8 @@ static int oqs_pub_decode(EVP_PKEY *pkey, X509_PUBKEY *pubkey)
       return 0;
     }
 
-    if (pklen != oqs_key->s->length_public_key) {
+    if ((oqs_key->s && pklen != oqs_key->s->length_public_key)
+            || (oqs_key->k && pklen != oqs_key->k->length_public_key)) {
       OQSerr(0, ERR_R_FATAL);
       oqs_pkey_ctx_free(oqs_key);
       return 0;
@@ -210,15 +266,21 @@ static int oqs_pub_decode(EVP_PKEY *pkey, X509_PUBKEY *pubkey)
     EVP_PKEY_assign(pkey, id, oqs_key);
     return 1;
 }
-
 static int oqs_pub_cmp(const EVP_PKEY *a, const EVP_PKEY *b)
 {
     const OQS_KEY *akey = (OQS_KEY*) a->pkey.ptr;
     const OQS_KEY *bkey = (OQS_KEY*) b->pkey.ptr;
+    size_t public_keylength = 0;
     if (akey == NULL || bkey == NULL)
         return -2;
+    if (akey->k != NULL) {
+        public_keylength = akey->k->length_public_key;
+    }
+    if (akey->s != NULL) {
+        public_keylength = akey->s->length_public_key;
+    }
 
-    return CRYPTO_memcmp(akey->pubkey, bkey->pubkey, akey->s->length_public_key) == 0;
+    return CRYPTO_memcmp(akey->pubkey, bkey->pubkey, public_keylength) == 0;
 }
 
 static int oqs_priv_decode(EVP_PKEY *pkey, const PKCS8_PRIV_KEY_INFO *p8)
@@ -228,6 +290,8 @@ static int oqs_priv_decode(EVP_PKEY *pkey, const PKCS8_PRIV_KEY_INFO *p8)
     ASN1_OCTET_STRING *oct = NULL;
     const X509_ALGOR *palg;
     OQS_KEY *oqs_key = NULL;
+    size_t public_key_len = 0;
+    size_t private_key_len = 0;
 
     if (!PKCS8_pkey_get0(NULL, &p, &plen, &palg, p8))
         return 0;
@@ -257,13 +321,22 @@ static int oqs_priv_decode(EVP_PKEY *pkey, const PKCS8_PRIV_KEY_INFO *p8)
       OQSerr(0, ERR_R_FATAL);
       return 0;
     }
-    if (plen != oqs_key->s->length_secret_key + oqs_key->s->length_public_key) {
+    if (oqs_key->s) {
+        private_key_len = oqs_key->s->length_secret_key;
+        public_key_len = oqs_key->s->length_public_key;
+    }
+    if (oqs_key->k) {
+        private_key_len = oqs_key->k->length_secret_key;
+        public_key_len = oqs_key->k->length_public_key;
+    }
+
+    if (plen != private_key_len + public_key_len) {
       OQSerr(0, ERR_R_FATAL);
       oqs_pkey_ctx_free(oqs_key);
       return 0;
     }
-    memcpy(oqs_key->privkey, p, oqs_key->s->length_secret_key);
-    memcpy(oqs_key->pubkey, p + oqs_key->s->length_secret_key, oqs_key->s->length_public_key);
+    memcpy(oqs_key->privkey, p, private_key_len);
+    memcpy(oqs_key->pubkey, p + private_key_len, public_key_len);
     EVP_PKEY_assign(pkey, pkey->ameth->pkey_id, oqs_key);
 
     ASN1_OCTET_STRING_free(oct);
@@ -275,15 +348,27 @@ static int oqs_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
     const OQS_KEY *oqskey = (OQS_KEY*) pkey->pkey.ptr;
     ASN1_OCTET_STRING oct;
     unsigned char *buf = NULL, *penc = NULL;
-    int buflen = oqskey->s->length_secret_key + oqskey->s->length_public_key, penclen;
+    int buflen = 0, penclen = 0;
+    size_t private_key_len = 0;
+    size_t public_key_len = 0;
+    if (oqs_key->s) {
+        private_key_len = oqs_key->s->length_secret_key;
+        public_key_len = oqs_key->s->length_public_key;
+    }
+    if (oqs_key->k) {
+        private_key_len = oqs_key->k->length_secret_key;
+        public_key_len = oqs_key->k->length_public_key;
+    }
+    buflen = private_key_len + public_key_len;
+
 
     buf = OPENSSL_secure_malloc(buflen);
     if (buf == NULL) {
         OQSerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
-    memcpy(buf, oqskey->privkey, oqskey->s->length_secret_key);
-    memcpy(buf + oqskey->s->length_secret_key, oqskey->pubkey, oqskey->s->length_public_key);
+    memcpy(buf, oqskey->privkey, private_key_len);
+    memcpy(buf + private_key_len, oqskey->pubkey, public_key_len);
     oct.data = buf;
     oct.length = buflen;
     oct.flags = 0;
@@ -309,16 +394,23 @@ static int oqs_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
 static int oqs_size(const EVP_PKEY *pkey)
 {
     const OQS_KEY *oqskey = (OQS_KEY*) pkey->pkey.ptr;
-    if (oqskey == NULL || oqskey->s == NULL) {
+    if (oqskey == NULL || oqskey->s == NULL || oqskey->k == NULL) {
         OQSerr(0, ERR_R_FATAL);
         return 0;
     }
-    return oqskey->s->length_signature;
+    if (oqskey->s) {
+        return oqskey->s->length_signature;
+    }
+    return 0;
 }
 
 static int oqs_bits(const EVP_PKEY *pkey)
 {
-    return ((OQS_KEY*) pkey->pkey.ptr)->s->length_public_key;
+    const OQS_KEY *oqskey = (OQS_KEY*) pkey->pkey.ptr;
+    if (oqskey->s) {
+        return oqskey->s->length_public_key;
+    }
+    return oqskey->k->length_public_key;
 }
 
 static int oqs_security_bits(const EVP_PKEY *pkey)
@@ -342,6 +434,16 @@ static int oqs_key_print(BIO *bp, const EVP_PKEY *pkey, int indent,
 {
     const OQS_KEY *oqskey = (OQS_KEY*) pkey->pkey.ptr;
     const char *nm = OBJ_nid2ln(pkey->ameth->pkey_id);
+    size_t private_key_len = 0;
+    size_t public_key_len = 0;
+    if (oqs_key->s) {
+        private_key_len = oqs_key->s->length_secret_key;
+        public_key_len = oqs_key->s->length_public_key;
+    }
+    if (oqs_key->k) {
+        private_key_len = oqs_key->k->length_secret_key;
+        public_key_len = oqs_key->k->length_public_key;
+    }
 
     if (keytype == KEY_TYPE_PRIVATE) {
         if (oqskey == NULL || oqskey->privkey == NULL) {
@@ -353,7 +455,7 @@ static int oqs_key_print(BIO *bp, const EVP_PKEY *pkey, int indent,
             return 0;
         if (BIO_printf(bp, "%*spriv:\n", indent, "") <= 0)
             return 0;
-        if (ASN1_buf_print(bp, oqskey->privkey, oqskey->s->length_secret_key,
+        if (ASN1_buf_print(bp, oqskey->privkey, private_key_len,
                            indent + 4) == 0)
             return 0;
     } else {
@@ -368,7 +470,7 @@ static int oqs_key_print(BIO *bp, const EVP_PKEY *pkey, int indent,
     if (BIO_printf(bp, "%*spub:\n", indent, "") <= 0)
         return 0;
 
-    if (ASN1_buf_print(bp, oqskey->pubkey, oqskey->s->length_public_key,
+    if (ASN1_buf_print(bp, oqskey->pubkey, public_key_len,
                        indent + 4) == 0)
         return 0;
     return 1;
@@ -397,11 +499,14 @@ static int oqs_item_verify(EVP_MD_CTX *ctx, const ASN1_ITEM *it, void *asn,
     /* Sanity check: make sure it is an OQS scheme with absent parameters */
     X509_ALGOR_get0(&obj, &ptype, NULL, sigalg);
     nid = OBJ_obj2nid(obj);
-    if (
-	(nid != NID_picnicL1FS &&
+    if ((
+#ifndef OQS_NIST_BRANCH
+	nid != NID_picnicL1FS &&
 	 nid != NID_qTESLA_I &&
 	 nid != NID_qTESLA_III_size &&
-	 nid != NID_qTESLA_III_speed
+	 nid != NID_qTESLA_III_speed &&
+#endif
+         nid != NID_kyber512
 	 /* ADD_MORE_OQS_SIG_HERE */
 	 ) || ptype != V_ASN1_UNDEF) {
         OQSerr(0, ERR_R_FATAL);
@@ -474,9 +579,15 @@ static int pkey_oqs_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
       goto err;
     }
 
-    if (OQS_SIG_keypair(oqs_key->s, oqs_key->pubkey, oqs_key->privkey) != OQS_SUCCESS) {
-      OQSerr(0, ERR_R_FATAL);
-      goto err;
+    if (oqs_key->s) {
+        if (OQS_SIG_keypair(oqs_key->s, oqs_key->pubkey, oqs_key->privkey) != OQS_SUCCESS) {
+          OQSerr(0, ERR_R_FATAL);
+          goto err;
+    } else {
+        if (OQS_KEM_keypair(oqs_key->s, oqs_key->pubkey, oqs_key->privkey) != OQS_SUCCESS) {
+            OQSerr(0, ERR_R_FATAL);
+            goto err;
+        }
     }
 
     EVP_PKEY_assign(pkey, id, oqs_key);
@@ -493,6 +604,11 @@ static int pkey_oqs_digestsign(EVP_MD_CTX *ctx, unsigned char *sig,
                                size_t tbslen)
 {
     const OQS_KEY *oqs_key = (OQS_KEY*) EVP_MD_CTX_pkey_ctx(ctx)->pkey->pkey.ptr;
+    if (oqs_key && oqs_key->k) {
+        // FIXME(KEM) We currently create 0-len signatures.
+        *siglen = 0;
+        return 1;
+    }
     if (!oqs_key || !oqs_key->s || !oqs_key->privkey ) {
       OQSerr(0, ERR_R_FATAL);
       return 0;
@@ -519,6 +635,9 @@ static int pkey_oqs_digestverify(EVP_MD_CTX *ctx, const unsigned char *sig,
                                  size_t tbslen)
 {
     const OQS_KEY *oqs_key = (OQS_KEY*) EVP_MD_CTX_pkey_ctx(ctx)->pkey->pkey.ptr;
+    if (oqs_key && oqs_key->k) {
+        return 1;
+    }
 
     if (!oqs_key || !oqs_key->s  || !oqs_key->pubkey || sig == NULL || tbs == NULL) {
       OQSerr(0, ERR_R_FATAL);
@@ -567,9 +686,11 @@ DEFINE_OQS_SIGN_INFO_SET(ALG, NID_ALG)                                \
 DEFINE_OQS_EVP_PKEY_METHOD(ALG, NID_ALG)                              \
 DEFINE_OQS_EVP_PKEY_ASN1_METHOD(ALG, NID_ALG, SHORT_NAME, LONG_NAME)
 
+#if !defined(OQS_NIST_BRANCH)
 DEFINE_OQS_EVP_METHODS(picnicL1FS, NID_picnicL1FS, "picnicL1FS", "OpenSSL Picnic L1 FS algorithm")
 DEFINE_OQS_EVP_METHODS(qteslaI, NID_qTESLA_I, "qteslaI", "OpenSSL qTESLA-I algorithm")
 DEFINE_OQS_EVP_METHODS(qteslaIIIsize, NID_qTESLA_III_size, "qteslaIIIsize", "OpenSSL qTESLA-III-size algorithm")
 DEFINE_OQS_EVP_METHODS(qteslaIIIspeed, NID_qTESLA_III_speed, "qteslaIIIspeed", "OpenSSL qTESLA-III-speed algorithm")
-
 #endif /* OQS_MASTER */
+
+DEFINE_OQS_EVP_METHODS(kyber512, NID_kyber512, "kyber512", "OQS kyber512 algorithm")

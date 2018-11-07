@@ -533,7 +533,7 @@ static const ssl_trace_tbl ssl_groups_tbl[] = {
     {OQS_KEM_CURVEID(NID_OQS_KEM_DEFAULT), "OQS KEM default"},
     {OQS_KEM_CURVEID(NID_OQS_SIKE_503), "sike503"},
     {OQS_KEM_CURVEID(NID_OQS_SIKE_751), "sike503"},
-#ifndef OQS_NIST_BRANCH
+#if !defined(OQS_NIST_BRANCH)
     {OQS_KEM_CURVEID(NID_OQS_SIDH_503), "sidh503"},
     {OQS_KEM_CURVEID(NID_OQS_SIDH_751), "sidh751"},
 #endif
@@ -593,6 +593,7 @@ static const ssl_trace_tbl ssl_groups_tbl[] = {
 #endif
     /* ADD_MORE_OQS_KEM_HERE */
     {OQS_KEM_CURVEID(NID_OQS_p256_KEM_DEFAULT), "p256 - OQS KEM default hybrid"},
+#if !defined(OQS_NIST_BRANCH)
     {OQS_KEM_CURVEID(NID_OQS_p256_SIKE_503), "p256 - sike503 hybrid"},
 #ifndef OQS_NIST_BRANCH
     {OQS_KEM_CURVEID(NID_OQS_p256_SIDH_503), "p256 - sidh503 hybrid"},

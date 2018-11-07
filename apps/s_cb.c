@@ -256,7 +256,7 @@ static const char *get_sigtype(int nid)
         return "qTESLA-III-speed";
      /* ADD_MORE_OQS_SIG_HERE */
 #endif
-    case NID_KYBER512:
+    case NID_kyber512:
         return "Kyber512";
     default:
         return NULL;

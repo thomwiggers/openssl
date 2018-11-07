@@ -70,8 +70,8 @@
 # define EVP_PKEY_QTESLAIIISIZE NID_qTESLA_III_size
 # define EVP_PKEY_QTESLAIIISPEED NID_qTESLA_III_speed
 /* ADD_MORE_OQS_SIG_HERE */
-#define EVP_PKEY_KYBER512 NID_KYBER512
 #endif
+#define EVP_PKEY_KYBER512 NID_KYBER512
 
 #ifdef  __cplusplus
 extern "C" {

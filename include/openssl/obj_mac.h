@@ -5233,7 +5233,7 @@
 #define NID_qTESLA_III_speed            1203
 #define OBJ_qTESLA_III_speed            OBJ_MSRPQC,2L,3L
 
-#define SN_KYBER512                     "kyber512"
-#define LN_KYBER512                     "Kyber-512"
-#define NID_KYBER512                    2202
-#define OBJ_KYBER512                    OBJ_MSRPQC,3L,1L
+#define SN_kyber512                     "kyber512"
+#define LN_kyber512                     "Kyber-512"
+#define NID_kyber512                    2202
+#define OBJ_kyber512                    OBJ_MSRPQC,3L,1L
