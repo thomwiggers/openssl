@@ -840,6 +840,7 @@ static const uint16_t tls12_sigalgs[] = {
     TLSEXT_SIGALG_qteslaIIIspeed,
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
+    TLSEXT_SIGALG_kyber512,
 
     TLSEXT_SIGALG_rsa_pss_pss_sha256,
     TLSEXT_SIGALG_rsa_pss_pss_sha384,
@@ -984,6 +985,9 @@ static const SIGALG_LOOKUP sigalg_lookup_tbl[] = {
      NID_undef, NID_undef},
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
+    {"kyber512", TLSEXT_SIGALG_kyber512,
+        NID_undef, -1, EVP_PKEY_KYBER512, SSL_PKEY_KYBER512,
+        NID_undef, NID_undef},
 };
 /* Legacy sigalgs for TLS < 1.2 RSA TLS signatures */
 static const SIGALG_LOOKUP legacy_rsa_sigalg = {

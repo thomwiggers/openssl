@@ -67,5 +67,6 @@ static const EVP_PKEY_ASN1_METHOD *standard_methods[] = {
     &qteslaIIIspeed_asn1_meth,
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
+    &kyber512_asn1_meth,
 };
 

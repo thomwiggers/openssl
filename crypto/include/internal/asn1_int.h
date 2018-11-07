@@ -94,6 +94,7 @@ extern const EVP_PKEY_ASN1_METHOD qteslaIIIsize_asn1_meth;
 extern const EVP_PKEY_ASN1_METHOD qteslaIIIspeed_asn1_meth;
 /* ADD_MORE_OQS_SIG_HERE */
 #endif
+extern const EVP_PKEY_ASN1_METHOD kyber512_asn1_meth;
 
 /*
  * These are used internally in the ASN1_OBJECT to keep track of whether the

@@ -57,6 +57,7 @@ static ossl_inline int cert_req_allowed(SSL *s)
  *  1: Yes
  *  0: No
  */
+// TODO(KEM): Add here when we have the client send a public key as well
 static int key_exchange_expected(SSL *s)
 {
     long alg_k = s->s3->tmp.new_cipher->algorithm_mkey;

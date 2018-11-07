@@ -5040,6 +5040,10 @@
 #define LN_kx_any               "kx-any"
 #define NID_kx_any              1063
 
+#define SN_kx_kem               "KxKEM"
+#define LN_kx_kem               "kx-kem"
+#define NID_kx_kem              2200
+
 #define SN_auth_rsa             "AuthRSA"
 #define LN_auth_rsa             "auth-rsa"
 #define NID_auth_rsa            1046
@@ -5075,6 +5079,10 @@
 #define SN_auth_any             "AuthANY"
 #define LN_auth_any             "auth-any"
 #define NID_auth_any            1064
+
+#define SN_auth_kem             "AuthKEM"
+#define LN_auth_kem             "auth-kem"
+#define NID_auth_kem            2201
 
 #define SN_poly1305             "Poly1305"
 #define LN_poly1305             "poly1305"
@@ -5224,3 +5232,8 @@
 #define LN_qTESLA_III_speed             "qTESLA-III-speed"
 #define NID_qTESLA_III_speed            1203
 #define OBJ_qTESLA_III_speed            OBJ_MSRPQC,2L,3L
+
+#define SN_KYBER512                     "kyber512"
+#define LN_KYBER512                     "Kyber-512"
+#define NID_KYBER512                    2202
+#define OBJ_KYBER512                    OBJ_MSRPQC,3L,1L

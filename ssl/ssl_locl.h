@@ -178,6 +178,8 @@
 # define SSL_kECDHEPSK           0x00000080U
 # define SSL_kDHEPSK             0x00000100U
 
+# define SSL_kKEM                0x00000200U
+
 /* all PSK */
 
 # define SSL_PSK     (SSL_kPSK | SSL_kRSAPSK | SSL_kECDHEPSK | SSL_kDHEPSK)
@@ -214,9 +216,10 @@
 #endif
 /* Any appropriate signature auth (for TLS 1.3 ciphersuites) */
 # define SSL_aANY                0x00000000U
+# define SSL_aKEM                0x01000000U
 /* All bits requiring a certificate */
 #define SSL_aCERT \
-  (SSL_aRSA | SSL_aDSS | SSL_aECDSA | SSL_aGOST01 | SSL_aGOST12) /* FIXMEOQS: should I add picnic here? */
+  (SSL_aRSA | SSL_aDSS | SSL_aECDSA | SSL_aGOST01 | SSL_aGOST12 | SSL_aKEM) /* FIXMEOQS: should I add picnic here? */
 
 /* Bits for algorithm_enc (symmetric encryption) */
 # define SSL_DES                 0x00000001U
@@ -401,9 +404,10 @@
 # define SSL_PKEY_QTESLAIIISIZE  11
 # define SSL_PKEY_QTESLAIIISPEED 12
 /* ADD_MORE_OQS_SIG_HERE */
-# define SSL_PKEY_NUM            13
+# define SSL_PKEY_NUM            14
 #else
-# define SSL_PKEY_NUM            9
+# define SSL_PKEY_KYBER512        13
+# define SSL_PKEY_NUM            10
 #endif
 /*
  * Pseudo-constant. GOST cipher suites can use different certs for 1
@@ -2423,6 +2427,7 @@ typedef enum downgrade_en {
 #define TLSEXT_SIGALG_qteslaIIIspeed                            0xfe03 /* private use code point */
 /* ADD_MORE_OQS_SIG_HERE */
 #endif
+#define TLSEXT_SIGALG_kyber512                                  0xfe13 /* private use code point */
 
 /* Known PSK key exchange modes */
 #define TLSEXT_KEX_MODE_KE                                      0x00
