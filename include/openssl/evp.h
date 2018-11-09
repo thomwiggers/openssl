@@ -71,7 +71,9 @@
 # define EVP_PKEY_QTESLAIIISPEED NID_qTESLA_III_speed
 /* ADD_MORE_OQS_SIG_HERE */
 #endif
-#define EVP_PKEY_KYBER512 NID_KYBER512
+#define EVP_PKEY_KYBER512 NID_kyber512
+#define EVP_PKEY_KYBER768 NID_kyber768
+#define EVP_PKEY_KYBER1024 NID_kyber1024
 
 #ifdef  __cplusplus
 extern "C" {

@@ -1623,6 +1623,7 @@ id-pkinit 5                     : pkInitKDC             : Signing KDC Response
                             : KxSRP        : kx-srp
                             : KxGOST       : kx-gost
                             : KxANY        : kx-any
+                            : KxKEM        : kx-kem
 
 # NIDs for cipher authentication
                             : AuthRSA      : auth-rsa
@@ -1634,6 +1635,7 @@ id-pkinit 5                     : pkInitKDC             : Signing KDC Response
                             : AuthSRP      : auth-srp
                             : AuthNULL     : auth-null
                             : AuthANY      : auth-any
+                            : AuthKEM      : auth-kem
 # NID for Poly1305
                             : Poly1305     : poly1305
 # NID for SipHash
@@ -1684,3 +1686,6 @@ MSRPQC 1 1                          : picnicL1FS : Picnic L1 FS
 MSRPQC 2 1                          : qteslaI : qTESLA-I
 MSRPQC 2 2                          : qteslaIIIsize : qTESLA-III-size
 MSRPQC 2 3                          : qteslaIIIspeed : qTESLA-III-speed
+MSRPQC 3 1                          : kyber512 : Kyber 512
+MSRPQC 3 2                          : kyber768 : Kyber 768
+MSRPQC 3 3                          : kyber1024 : Kyber 1024

@@ -5042,7 +5042,7 @@
 
 #define SN_kx_kem               "KxKEM"
 #define LN_kx_kem               "kx-kem"
-#define NID_kx_kem              2200
+#define NID_kx_kem              1207
 
 #define SN_auth_rsa             "AuthRSA"
 #define LN_auth_rsa             "auth-rsa"
@@ -5082,7 +5082,7 @@
 
 #define SN_auth_kem             "AuthKEM"
 #define LN_auth_kem             "auth-kem"
-#define NID_auth_kem            2201
+#define NID_auth_kem            1208
 
 #define SN_poly1305             "Poly1305"
 #define LN_poly1305             "poly1305"
@@ -5233,7 +5233,17 @@
 #define NID_qTESLA_III_speed            1203
 #define OBJ_qTESLA_III_speed            OBJ_MSRPQC,2L,3L
 
-#define SN_kyber512                     "kyber512"
-#define LN_kyber512                     "Kyber-512"
-#define NID_kyber512                    2202
-#define OBJ_kyber512                    OBJ_MSRPQC,3L,1L
+#define SN_kyber512             "kyber512"
+#define LN_kyber512             "Kyber 512"
+#define NID_kyber512            1204
+#define OBJ_kyber512            OBJ_MSRPQC,3L,1L
+
+#define SN_kyber768             "kyber768"
+#define LN_kyber768             "Kyber 768"
+#define NID_kyber768            1205
+#define OBJ_kyber768            OBJ_MSRPQC,3L,2L
+
+#define SN_kyber1024            "kyber1024"
+#define LN_kyber1024            "Kyber 1024"
+#define NID_kyber1024           1206
+#define OBJ_kyber1024           OBJ_MSRPQC,3L,3L

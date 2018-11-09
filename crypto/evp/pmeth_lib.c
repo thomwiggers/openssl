@@ -76,6 +76,7 @@ static const EVP_PKEY_METHOD *standard_methods[] = {
     &qteslaIIIspeed_pkey_meth,
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
+    &kyber512_pkey_meth,
 };
 
 DECLARE_OBJ_BSEARCH_CMP_FN(const EVP_PKEY_METHOD *, const EVP_PKEY_METHOD *,

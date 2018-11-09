@@ -120,6 +120,8 @@ extern const EVP_PKEY_METHOD qteslaIIIsize_pkey_meth;
 extern const EVP_PKEY_METHOD qteslaIIIspeed_pkey_meth;
 /* ADD_MORE_OQS_SIG_HERE */
 #endif
+extern const EVP_PKEY_METHOD kyber512_pkey_meth;
+/* ADD_MORE_OQS_KEM_HERE */
 
 struct evp_md_st {
     int type;

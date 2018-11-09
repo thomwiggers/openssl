@@ -1201,3 +1201,8 @@ qteslaIIIspeed		1200
 qTESLA_I		1201
 qTESLA_III_size		1202
 qTESLA_III_speed		1203
+kyber512		1204
+kyber768		1205
+kyber1024		1206
+kx_kem		1207
+auth_kem		1208

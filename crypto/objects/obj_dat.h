@@ -10,7 +10,7 @@
  */
 
 /* Serialized OID's */
-static const unsigned char so[7822] = {
+static const unsigned char so[7855] = {
     0x2A,0x86,0x48,0x86,0xF7,0x0D,                 /* [    0] OBJ_rsadsi */
     0x2A,0x86,0x48,0x86,0xF7,0x0D,0x01,            /* [    6] OBJ_pkcs */
     0x2A,0x86,0x48,0x86,0xF7,0x0D,0x02,0x02,       /* [   13] OBJ_md2 */
@@ -1082,9 +1082,12 @@ static const unsigned char so[7822] = {
     0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x59,0x02,0x02,0x01,  /* [ 7788] OBJ_qTESLA_I */
     0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x59,0x02,0x02,0x02,  /* [ 7799] OBJ_qTESLA_III_size */
     0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x59,0x02,0x02,0x03,  /* [ 7810] OBJ_qTESLA_III_speed */
+    0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x59,0x02,0x03,0x01,  /* [ 7821] OBJ_kyber512 */
+    0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x59,0x02,0x03,0x02,  /* [ 7832] OBJ_kyber768 */
+    0x2B,0x06,0x01,0x04,0x01,0x82,0x37,0x59,0x02,0x03,0x03,  /* [ 7843] OBJ_kyber1024 */
 };
 
-#define NUM_NID 1204
+#define NUM_NID 1209
 static const ASN1_OBJECT nid_objs[NUM_NID] = {
     {"UNDEF", "undefined", NID_undef},
     {"rsadsi", "RSA Data Security, Inc.", NID_rsadsi, 6, &so[0]},
@@ -2290,9 +2293,14 @@ static const ASN1_OBJECT nid_objs[NUM_NID] = {
     {"qteslaI", "qTESLA-I", NID_qTESLA_I, 11, &so[7788]},
     {"qteslaIIIsize", "qTESLA-III-size", NID_qTESLA_III_size, 11, &so[7799]},
     {"qteslaIIIspeed", "qTESLA-III-speed", NID_qTESLA_III_speed, 11, &so[7810]},
+    {"kyber512", "Kyber 512", NID_kyber512, 11, &so[7821]},
+    {"kyber768", "Kyber 768", NID_kyber768, 11, &so[7832]},
+    {"kyber1024", "Kyber 1024", NID_kyber1024, 11, &so[7843]},
+    {"KxKEM", "kx-kem", NID_kx_kem},
+    {"AuthKEM", "auth-kem", NID_auth_kem},
 };
 
-#define NUM_SN 1192
+#define NUM_SN 1197
 static const unsigned int sn_objs[NUM_SN] = {
      364,    /* "AD_DVCS" */
      419,    /* "AES-128-CBC" */
@@ -2359,6 +2367,7 @@ static const unsigned int sn_objs[NUM_SN] = {
     1047,    /* "AuthECDSA" */
     1050,    /* "AuthGOST01" */
     1051,    /* "AuthGOST12" */
+    1208,    /* "AuthKEM" */
     1053,    /* "AuthNULL" */
     1048,    /* "AuthPSK" */
     1046,    /* "AuthRSA" */
@@ -2463,6 +2472,7 @@ static const unsigned int sn_objs[NUM_SN] = {
     1038,    /* "KxECDHE" */
     1040,    /* "KxECDHE-PSK" */
     1045,    /* "KxGOST" */
+    1207,    /* "KxKEM" */
     1043,    /* "KxPSK" */
     1037,    /* "KxRSA" */
     1042,    /* "KxRSA_PSK" */
@@ -3112,6 +3122,9 @@ static const unsigned int sn_objs[NUM_SN] = {
      956,    /* "jurisdictionST" */
      150,    /* "keyBag" */
       83,    /* "keyUsage" */
+    1206,    /* "kyber1024" */
+    1204,    /* "kyber512" */
+    1205,    /* "kyber768" */
      477,    /* "lastModifiedBy" */
      476,    /* "lastModifiedTime" */
      157,    /* "localKeyID" */
@@ -3488,7 +3501,7 @@ static const unsigned int sn_objs[NUM_SN] = {
     1093,    /* "x509ExtAdmission" */
 };
 
-#define NUM_LN 1192
+#define NUM_LN 1197
 static const unsigned int ln_objs[NUM_LN] = {
      363,    /* "AD Time Stamping" */
      405,    /* "ANSI X9.62" */
@@ -3589,6 +3602,9 @@ static const unsigned int ln_objs[NUM_LN] = {
      665,    /* "Inherit all" */
      647,    /* "International Organizations" */
      142,    /* "Invalidity Date" */
+    1206,    /* "Kyber 1024" */
+    1204,    /* "Kyber 512" */
+    1205,    /* "Kyber 768" */
      504,    /* "MIME MHS" */
     1196,    /* "MSRPQC" */
      388,    /* "Mail" */
@@ -3780,6 +3796,7 @@ static const unsigned int ln_objs[NUM_LN] = {
     1047,    /* "auth-ecdsa" */
     1050,    /* "auth-gost01" */
     1051,    /* "auth-gost12" */
+    1208,    /* "auth-kem" */
     1053,    /* "auth-null" */
     1048,    /* "auth-psk" */
     1046,    /* "auth-rsa" */
@@ -4292,6 +4309,7 @@ static const unsigned int ln_objs[NUM_LN] = {
     1038,    /* "kx-ecdhe" */
     1040,    /* "kx-ecdhe-psk" */
     1045,    /* "kx-gost" */
+    1207,    /* "kx-kem" */
     1043,    /* "kx-psk" */
     1037,    /* "kx-rsa" */
     1042,    /* "kx-rsa-psk" */
@@ -4684,7 +4702,7 @@ static const unsigned int ln_objs[NUM_LN] = {
      125,    /* "zlib compression" */
 };
 
-#define NUM_OBJ 1077
+#define NUM_OBJ 1080
 static const unsigned int obj_objs[NUM_OBJ] = {
        0,    /* OBJ_undef                        0 */
      181,    /* OBJ_iso                          1 */
@@ -5750,6 +5768,9 @@ static const unsigned int obj_objs[NUM_OBJ] = {
     1201,    /* OBJ_qTESLA_I                     1 3 6 1 4 1 311 89 2 2 1 */
     1202,    /* OBJ_qTESLA_III_size              1 3 6 1 4 1 311 89 2 2 2 */
     1203,    /* OBJ_qTESLA_III_speed             1 3 6 1 4 1 311 89 2 2 3 */
+    1204,    /* OBJ_kyber512                     1 3 6 1 4 1 311 89 2 3 1 */
+    1205,    /* OBJ_kyber768                     1 3 6 1 4 1 311 89 2 3 2 */
+    1206,    /* OBJ_kyber1024                    1 3 6 1 4 1 311 89 2 3 3 */
     1056,    /* OBJ_blake2b512                   1 3 6 1 4 1 1722 12 2 1 16 */
     1057,    /* OBJ_blake2s256                   1 3 6 1 4 1 1722 12 2 2 8 */
     1159,    /* OBJ_dstu4145be                   1 2 804 2 1 1 1 1 3 1 1 1 1 */
