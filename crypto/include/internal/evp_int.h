@@ -88,6 +88,12 @@ struct evp_pkey_method_st {
     int (*param_check) (EVP_PKEY *pkey);
 
     int (*digest_custom) (EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+
+    // KEM methods
+    int (*encapsulate_init) (EVP_PKEY_CTX *ctx);
+    int (*encapsulate) (EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen);
+    int (*decapsulate_init) (EVP_PKEY_CTX *ctx);
+    int (*decapsulate) (EVP_PKEY_CTX *ctx, const unsigned char *ciphertext, unsigned char *key, size_t *keylen);
 } /* EVP_PKEY_METHOD */ ;
 
 DEFINE_STACK_OF_CONST(EVP_PKEY_METHOD)

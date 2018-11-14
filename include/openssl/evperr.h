@@ -65,12 +65,16 @@ int ERR_load_EVP_strings(void);
 # define EVP_F_EVP_PKEY_CTX_CTRL_STR                      150
 # define EVP_F_EVP_PKEY_CTX_DUP                           156
 # define EVP_F_EVP_PKEY_CTX_MD                            168
+# define EVP_F_EVP_PKEY_DECAPSULATE                       207
+# define EVP_F_EVP_PKEY_DECAPSULATE_INIT                  208
 # define EVP_F_EVP_PKEY_DECRYPT                           104
 # define EVP_F_EVP_PKEY_DECRYPT_INIT                      138
 # define EVP_F_EVP_PKEY_DECRYPT_OLD                       151
 # define EVP_F_EVP_PKEY_DERIVE                            153
 # define EVP_F_EVP_PKEY_DERIVE_INIT                       154
 # define EVP_F_EVP_PKEY_DERIVE_SET_PEER                   155
+# define EVP_F_EVP_PKEY_ENCAPSULATE                       209
+# define EVP_F_EVP_PKEY_ENCAPSULATE_INIT                  210
 # define EVP_F_EVP_PKEY_ENCRYPT                           105
 # define EVP_F_EVP_PKEY_ENCRYPT_INIT                      139
 # define EVP_F_EVP_PKEY_ENCRYPT_OLD                       152

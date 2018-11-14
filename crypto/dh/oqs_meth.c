@@ -89,23 +89,23 @@ static int oqs_key_init(OQS_KEY **p_oqs_key, int nid, oqs_key_type_t keytype) {
 
     oqs_key = OPENSSL_zalloc(sizeof(*oqs_key));
     if (oqs_key == NULL) {
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         goto err;
     }
     oqs_key->k = OQS_KEM_new(oqs_alg_name);
     if (oqs_key->k == NULL) {
-        OQSerr(0, ERR_R_FATAL);
+        DHerr(0, ERR_R_FATAL);
         goto err;
     }
     oqs_key->pubkey = OPENSSL_malloc(oqs_key->k->length_public_key);
     if (oqs_key->pubkey == NULL) {
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         goto err;
     }
     if (keytype == KEY_TYPE_PRIVATE) {
         oqs_key->privkey = OPENSSL_secure_malloc(oqs_key->k->length_secret_key);
         if (oqs_key->privkey == NULL) {
-            OQSerr(0, ERR_R_MALLOC_FAILURE);
+            DHerr(0, ERR_R_MALLOC_FAILURE);
             goto err;
         }
     }
@@ -124,20 +124,20 @@ static int oqs_pub_encode(X509_PUBKEY *pk, const EVP_PKEY *pkey)
     unsigned char *penc;
 
     if (!oqs_key || !oqs_key->k || !oqs_key->pubkey ) {
-      OQSerr(0, ERR_R_FATAL);
+      DHerr(0, ERR_R_FATAL);
       return 0;
     }
 
     penc = OPENSSL_memdup(oqs_key->pubkey, oqs_key->k->length_public_key);
     if (penc == NULL) {
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
 
     if (!X509_PUBKEY_set0_param(pk, OBJ_nid2obj(pkey->ameth->pkey_id),
                                 V_ASN1_UNDEF, NULL, penc, oqs_key->k->length_public_key)) {
         OPENSSL_free(penc);
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
     return 1;
@@ -157,7 +157,7 @@ static int oqs_pub_decode(EVP_PKEY *pkey, X509_PUBKEY *pubkey)
     if (p == NULL) {
       /* pklen is checked below, after we instantiate the oqs_key to
          learn the expected len */
-      OQSerr(0, ERR_R_FATAL);
+      DHerr(0, ERR_R_FATAL);
       return 0;
     }
 
@@ -167,18 +167,18 @@ static int oqs_pub_decode(EVP_PKEY *pkey, X509_PUBKEY *pubkey)
       /* Algorithm parameters must be absent */
       X509_ALGOR_get0(NULL, &ptype, NULL, palg);
       if (ptype != V_ASN1_UNDEF) {
-        OQSerr(0, ERR_R_FATAL);
+        DHerr(0, ERR_R_FATAL);
         return 0;
       }
     }
 
     if (!oqs_key_init(&oqs_key, id, 0)) {
-      OQSerr(0, ERR_R_FATAL);
+      DHerr(0, ERR_R_FATAL);
       return 0;
     }
 
     if (oqs_key->k && pklen != oqs_key->k->length_public_key) {
-      OQSerr(0, ERR_R_FATAL);
+      DHerr(0, ERR_R_FATAL);
       oqs_pkey_ctx_free(oqs_key);
       return 0;
     }
@@ -228,18 +228,18 @@ static int oqs_priv_decode(EVP_PKEY *pkey, const PKCS8_PRIV_KEY_INFO *p8)
       /* Algorithm parameters must be absent */
       X509_ALGOR_get0(NULL, &ptype, NULL, palg);
       if (ptype != V_ASN1_UNDEF) {
-        OQSerr(0, ERR_R_FATAL);
+        DHerr(0, ERR_R_FATAL);
         return 0;
       }
     }
 
     if (!oqs_key_init(&oqs_key, pkey->ameth->pkey_id, 1)) {
-      OQSerr(0, ERR_R_FATAL);
+      DHerr(0, ERR_R_FATAL);
       return 0;
     }
 
     if (plen != oqs_key->k->length_secret_key + oqs_key->k->length_public_key) {
-      OQSerr(0, ERR_R_FATAL);
+      DHerr(0, ERR_R_FATAL);
       oqs_pkey_ctx_free(oqs_key);
       return 0;
     }
@@ -264,7 +264,7 @@ static int oqs_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
 
     buf = OPENSSL_secure_malloc(buflen);
     if (buf == NULL) {
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
     memcpy(buf, oqs_key->privkey, oqs_key->k->length_secret_key);
@@ -275,7 +275,7 @@ static int oqs_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
 
     penclen = i2d_ASN1_OCTET_STRING(&oct, &penc);
     if (penclen < 0) {
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
 
@@ -284,7 +284,7 @@ static int oqs_priv_encode(PKCS8_PRIV_KEY_INFO *p8, const EVP_PKEY *pkey)
                          V_ASN1_UNDEF, NULL, penc, penclen)) {
         OPENSSL_secure_clear_free(buf, buflen);
         OPENSSL_clear_free(penc, penclen);
-        OQSerr(0, ERR_R_MALLOC_FAILURE);
+        DHerr(0, ERR_R_MALLOC_FAILURE);
         return 0;
     }
 
@@ -387,12 +387,12 @@ static int pkey_oqs_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
     int id = ctx->pmeth->pkey_id;
 
     if (!oqs_key_init(&oqs_key, id, 1)) {
-        OQSerr(0, ERR_R_FATAL);
+        DHerr(0, ERR_R_FATAL);
         goto err;
     }
 
     if (OQS_KEM_keypair(oqs_key->k, oqs_key->pubkey, oqs_key->privkey) != OQS_SUCCESS) {
-        OQSerr(0, ERR_R_FATAL);
+        DHerr(0, ERR_R_FATAL);
         goto err;
     }
 

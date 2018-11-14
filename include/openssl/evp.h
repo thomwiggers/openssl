@@ -1277,6 +1277,8 @@ void EVP_PKEY_asn1_set_security_bits(EVP_PKEY_ASN1_METHOD *ameth,
 # define EVP_PKEY_OP_ENCRYPT             (1<<8)
 # define EVP_PKEY_OP_DECRYPT             (1<<9)
 # define EVP_PKEY_OP_DERIVE              (1<<10)
+# define EVP_PKEY_OP_ENCAPSULATE         (1<<11)
+# define EVP_PKEY_OP_DECAPSULATE         (1<<12)
 
 # define EVP_PKEY_OP_TYPE_SIG    \
         (EVP_PKEY_OP_SIGN | EVP_PKEY_OP_VERIFY | EVP_PKEY_OP_VERIFYRECOVER \
@@ -1416,6 +1418,12 @@ int EVP_PKEY_decrypt(EVP_PKEY_CTX *ctx,
 int EVP_PKEY_derive_init(EVP_PKEY_CTX *ctx);
 int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *ctx, EVP_PKEY *peer);
 int EVP_PKEY_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
+
+int EVP_PKEY_encapsulate_init(EVP_PKEY_CTX *ctx);
+int EVP_PKEY_encapsulate_set_peer(EVP_PKEY_CTX *ctx, EVP_PKEY *peer);
+int EVP_PKEY_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen);
+int EVP_PKEY_decapsulate_init(EVP_PKEY_CTX *ctx);
+int EVP_PKEY_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const unsigned char *ciphertext, size_t *keylen);
 
 typedef int EVP_PKEY_gen_cb(EVP_PKEY_CTX *ctx);
 

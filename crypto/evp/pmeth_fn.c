@@ -229,6 +229,7 @@ int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *ctx, EVP_PKEY *peer)
         return -2;
     }
     if (ctx->operation != EVP_PKEY_OP_DERIVE
+        && ctx->operation != EVP_PKEY_OP_ENCAPSULATE
         && ctx->operation != EVP_PKEY_OP_ENCRYPT
         && ctx->operation != EVP_PKEY_OP_DECRYPT) {
         EVPerr(EVP_F_EVP_PKEY_DERIVE_SET_PEER,
@@ -281,6 +282,10 @@ int EVP_PKEY_derive_set_peer(EVP_PKEY_CTX *ctx, EVP_PKEY *peer)
     return 1;
 }
 
+int EVP_PKEY_encapsulate_set_peer(EVP_PKEY_CTX *ctx, EVP_PKEY *peer) {
+    return EVP_PKEY_derive_set_peer(ctx, peer);
+}
+
 int EVP_PKEY_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *pkeylen)
 {
     if (!ctx || !ctx->pmeth || !ctx->pmeth->derive) {
@@ -294,4 +299,64 @@ int EVP_PKEY_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *pkeylen)
     }
     M_check_autoarg(ctx, key, pkeylen, EVP_F_EVP_PKEY_DERIVE)
         return ctx->pmeth->derive(ctx, key, pkeylen);
+}
+
+int EVP_PKEY_encapsulate_init(EVP_PKEY_CTX *ctx) {
+    int ret;
+    if (!ctx || !ctx->pmeth || !ctx->pmeth->encapsulate) {
+        EVPerr(EVP_F_EVP_PKEY_ENCAPSULATE_INIT,
+               EVP_R_OPERATION_NOT_SUPPORTED_FOR_THIS_KEYTYPE);
+        return -2;
+    }
+    ctx->operation = EVP_PKEY_OP_ENCAPSULATE;
+    if (!ctx->pmeth->encapsulate_init)
+        return 1;
+    ret = ctx->pmeth->encapsulate_init(ctx);
+    if (ret <= 0)
+        ctx->operation = EVP_PKEY_OP_UNDEFINED;
+    return ret;
+}
+
+int EVP_PKEY_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen) {
+    if (!ctx || !ctx->pmeth || !ctx->pmeth->decapsulate) {
+        EVPerr(EVP_F_EVP_PKEY_ENCAPSULATE,
+               EVP_R_OPERATION_NOT_SUPPORTED_FOR_THIS_KEYTYPE);
+        return -2;
+    }
+    if (ctx->operation != EVP_PKEY_OP_ENCAPSULATE) {
+        EVPerr(EVP_F_EVP_PKEY_ENCAPSULATE, EVP_R_OPERATON_NOT_INITIALIZED);
+        return -1;
+    }
+
+    return ctx->pmeth->encapsulate(ctx, key, ciphertext, keylen, ctlen);
+}
+
+int EVP_PKEY_decapsulate_init(EVP_PKEY_CTX *ctx) {
+    int ret;
+    if (!ctx || !ctx->pmeth || !ctx->pmeth->decapsulate) {
+        EVPerr(EVP_F_EVP_PKEY_DECAPSULATE_INIT,
+               EVP_R_OPERATION_NOT_SUPPORTED_FOR_THIS_KEYTYPE);
+        return -2;
+    }
+    ctx->operation = EVP_PKEY_OP_DECAPSULATE;
+    if (!ctx->pmeth->decapsulate_init)
+        return 1;
+    ret = ctx->pmeth->decapsulate_init(ctx);
+    if (ret <= 0)
+        ctx->operation = EVP_PKEY_OP_UNDEFINED;
+    return ret;
+}
+
+int EVP_PKEY_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const unsigned char *ciphertext, size_t *keylen) {
+    if (!ctx || !ctx->pmeth || !ctx->pmeth->decapsulate) {
+        EVPerr(EVP_F_EVP_PKEY_DECAPSULATE,
+               EVP_R_OPERATION_NOT_SUPPORTED_FOR_THIS_KEYTYPE);
+        return -2;
+    }
+    if (ctx->operation != EVP_PKEY_OP_DECAPSULATE) {
+        EVPerr(EVP_F_EVP_PKEY_DECAPSULATE, EVP_R_OPERATON_NOT_INITIALIZED);
+        return -1;
+    }
+
+    return ctx->pmeth->decapsulate(ctx, key, ciphertext, keylen);
 }

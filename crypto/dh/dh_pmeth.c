@@ -478,6 +478,44 @@ static int pkey_dh_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
     return 0;
 }
 
+static int pkey_dh_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen) {
+    BIGNUM *dhpub = ctx->pkey->pkey.dh->pub_key;
+    int ret = pkey_dh_derive(ctx, key, keylen);
+    *ctlen = BN_num_bytes(dhpub);
+
+    if (ret && key != NULL) {
+        BN_copy((BIGNUM*)ciphertext, dhpub);
+    }
+    return ret;
+}
+
+static int pkey_dh_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const unsigned char *ciphertext, size_t *keylen) {
+    int ret = 0;
+    DH *dh;
+    BIGNUM *dhpub = (BIGNUM*)ciphertext;
+    DH_PKEY_CTX *dctx = ctx->data;
+    if (!ctx->pkey) {
+        DHerr(DH_F_PKEY_DH_DECAPSULATE, DH_R_KEYS_NOT_SET);
+        return 0;
+    }
+
+    dh = ctx->pkey->pkey.dh;
+
+    if (key == NULL) {
+        *keylen = DH_size(dh);
+        return 1;
+    }
+    if (dctx->pad)
+        ret = DH_compute_key_padded(key, dhpub, dh);
+    else
+        ret = DH_compute_key(key, dhpub, dh);
+    if (ret < 0)
+        return ret;
+    *keylen = ret;
+    return 1;
+}
+
+
 const EVP_PKEY_METHOD dh_pkey_meth = {
     EVP_PKEY_DH,
     0,
@@ -509,7 +547,12 @@ const EVP_PKEY_METHOD dh_pkey_meth = {
     pkey_dh_derive,
 
     pkey_dh_ctrl,
-    pkey_dh_ctrl_str
+    pkey_dh_ctrl_str,
+    0, 0, 0, 0, 0, 0,
+    0,
+    pkey_dh_encapsulate,
+    0,
+    pkey_dh_decapsulate,
 };
 
 const EVP_PKEY_METHOD dhx_pkey_meth = {
