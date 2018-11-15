@@ -406,7 +406,7 @@
 /* ADD_MORE_OQS_SIG_HERE */
 # define SSL_PKEY_NUM            14
 #else
-# define SSL_PKEY_KYBER512        13
+# define SSL_PKEY_KEM            13
 # define SSL_PKEY_NUM            10
 #endif
 /*

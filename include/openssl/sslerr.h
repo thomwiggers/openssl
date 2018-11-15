@@ -291,6 +291,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_F_TLS_CONSTRUCT_CKE_DHE                      404
 # define SSL_F_TLS_CONSTRUCT_CKE_ECDHE                    405
 # define SSL_F_TLS_CONSTRUCT_CKE_GOST                     406
+# define SSL_F_TLS_CONSTRUCT_CKE_KEM                      639
 # define SSL_F_TLS_CONSTRUCT_CKE_PSK_PREAMBLE             407
 # define SSL_F_TLS_CONSTRUCT_CKE_RSA                      409
 # define SSL_F_TLS_CONSTRUCT_CKE_SRP                      410

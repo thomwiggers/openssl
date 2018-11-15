@@ -437,6 +437,8 @@ static const ERR_STRING_DATA SSL_str_functs[] = {
      "tls_construct_cke_ecdhe"},
     {ERR_PACK(ERR_LIB_SSL, SSL_F_TLS_CONSTRUCT_CKE_GOST, 0),
      "tls_construct_cke_gost"},
+    {ERR_PACK(ERR_LIB_SSL, SSL_F_TLS_CONSTRUCT_CKE_KEM, 0),
+     "tls_construct_cke_kem"},
     {ERR_PACK(ERR_LIB_SSL, SSL_F_TLS_CONSTRUCT_CKE_PSK_PREAMBLE, 0),
      "tls_construct_cke_psk_preamble"},
     {ERR_PACK(ERR_LIB_SSL, SSL_F_TLS_CONSTRUCT_CKE_RSA, 0),

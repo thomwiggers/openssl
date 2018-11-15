@@ -206,7 +206,6 @@ static int oqs_priv_decode(EVP_PKEY *pkey, const PKCS8_PRIV_KEY_INFO *p8)
     ASN1_OCTET_STRING *oct = NULL;
     const X509_ALGOR *palg;
     OQS_KEY *oqs_key = NULL;
-    printf("Called OQS_PRIV_DECODE\n");
 
     if (!PKCS8_pkey_get0(NULL, &p, &plen, &palg, p8)) {
         return 0;
@@ -427,6 +426,65 @@ static int pkey_oqs_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen
     return 0;
 }
 
+static int pkey_oqs_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
+{
+    switch (type) {
+    case EVP_PKEY_CTRL_MD:
+        /* Only NULL allowed as digest */
+        if (p2 == NULL)
+            return 1;
+        DHerr(DH_F_PKEY_OQS_CTRL, ERR_R_FATAL);
+        return 0;
+
+    case EVP_PKEY_CTRL_DIGESTINIT:
+        return 1;
+    }
+    return -2;
+}
+
+static int pkey_oqs_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen) {
+    OQS_KEY *oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
+    OQS_KEY *oqs_peer;
+
+    if (!ctx->pkey || !ctx->peerkey) {
+        DHerr(DH_F_PKEY_OQS_ENCAPSULATE, DH_R_KEYS_NOT_SET);
+        return 0;
+    }
+    oqs_peer = (OQS_KEY*) ctx->peerkey->pkey.ptr;
+
+    *keylen = oqs_size(oqs_key);
+    *ctlen = oqs_key->k->length_ciphertext;
+    if (key == NULL && ciphertext == NULL) {
+        return 1;
+    }
+    if (key == NULL || ciphertext == NULL) {
+        DHerr(DH_F_PKEY_OQS_ENCAPSULATE, DH_R_FATAL);
+    }
+
+    if (OQS_KEM_encaps(oqs_key->k, key, ciphertext, oqs_peer->pubkey) == OQS_SUCCESS) {
+        return 1;
+    }
+
+    DHerr(DH_F_PKEY_OQS_ENCAPSULATE, DH_R_FATAL);
+    return 0;
+}
+
+static int pkey_oqs_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const unsigned char *ciphertext, size_t *keylen) {
+    OQS_KEY *oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
+    *keylen = oqs_size(oqs_key);
+
+    if (key == NULL) {
+        return 1;
+    }
+
+    if (OQS_KEM_decaps(oqs_key->k, key, ciphertext, oqs_key->privkey) == OQS_SUCCESS) {
+        return 1;
+    }
+
+    DHerr(DH_F_PKEY_OQS_DECAPSULATE, DH_R_FATAL);
+    return 0;
+}
+
 
 #define DEFINE_OQS_EVP_PKEY_ASN1_METHOD(ALG, NID_ALG, SHORT_NAME, LONG_NAME) \
 const EVP_PKEY_ASN1_METHOD ALG##_asn1_meth = { \
@@ -477,11 +535,15 @@ const EVP_PKEY_METHOD ALG##_pkey_meth = {             \
     0, 0,   /* decrypt_init, decrypt */               \
     0,      /* derive_init */                         \
     pkey_oqs_derive,  /* derive */                    \
-    0, 0,   /* ctrl, ctrl_str */                      \
+    pkey_oqs_ctrl, 0,   /* ctrl, ctrl_str */          \
     0, 0,   /* digestsign, digestverify */            \
     0,      /* check */                               \
     0, 0,   /* public_check, param_check */           \
     0,      /* digest_custom */                       \
+    0,      /* encapsulate_init */                    \
+    oqs_pkey_encapsulate, /* encapsulate */           \
+    0,      /* decapsulate_init */                    \
+    oqs_pkey_decapsulate, /* decapsulate */           \
 };
 
 

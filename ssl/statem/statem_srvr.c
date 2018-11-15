@@ -3134,6 +3134,58 @@ static int tls_process_cke_rsa(SSL *s, PACKET *pkt)
 #endif
 }
 
+static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
+    EVP_PKEY *skey = NULL;
+    EVP_PKEY *ckey = NULL;
+    EVP_PKEY_CTX *sctx = NULL;
+    PACKET ciphertext = NULL;
+    unsigned char *key = NULL;
+    unsigned int i = 0;
+    unsigned int keylen;
+
+    // FIXME(Thom): process CKE with KEM ciphertext
+    // obtain server certificate private key
+    skey = s->s3->tmp.cert->privatekey;
+
+    // read ciphertext
+    if (!PACKET_get_net_2(pkt, &i) || PACKET_remaining(pkt) != i) {
+        SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
+               SSL_R_KEM_CIPHERTEXT_LENGTH_IS_WRONG);
+        goto err;
+    }
+
+    /* Assume > SSLv3: length is specified */
+    if (s->version == SSL3_VERSION || s->version == DTLS1_BAD_VER) {
+        SSLfatal(s, SSL_AD_DECODE_ERROR, S_F_TLS_PROCESS_CKE_KEM,
+                SSL_R_WRONG_VERSION);
+    }
+    if (!PACKET_get_length_prefixed_2(pkt, &ciphertext_pkt)
+            || PACKET_remaining(pkt) != 0) {
+        SSLfatal(s, SSL_AD_DECODE_ERROR, S_F_TLS_PROCESS_CKE_KEM,
+                SSL_R_LENGTH_MISMATCH);
+        return 0;
+    }
+
+    // Get length of ciphertext and key
+    // FIXME(Thom): Verify length of ciphertext?
+
+    EVP_PKEY_decapsulate(sctx, NULL, NULL, &keylen);
+    key = OPENSSL_malloc(keylen);
+    if (key == NULL) {
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
+                 ERR_R_MALLOC_FAILURE);
+        return 0;
+    }
+
+    // decapsulate ciphertext
+    EVP_PKEY_decapsulate(sctx, key, PACKET_data(ciphertext), &keylen);
+
+    // FIXME fix master secret generation
+    rv = ssl_generate_master_secret(s, key, keylen, 0);
+
+    return rv;
+}
+
 static int tls_process_cke_dhe(SSL *s, PACKET *pkt)
 {
 #ifndef OPENSSL_NO_DH

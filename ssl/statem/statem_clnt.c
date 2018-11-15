@@ -2307,6 +2307,11 @@ MSG_PROCESS_RETURN tls_process_key_exchange(SSL *s, PACKET *pkt)
             /* SSLfatal() already called */
             goto err;
         }
+    } else if (alg_k & (SSL_kKEM)) {
+        // FIXME(Thom): Add KEM here.
+        // Client needs to encapsulate against the server's certificate (!)
+        SSLfatal(s, SSL_AD_UNEXPECTED_MESSAGE, SSL_F_TLS_PROCESS_KEY_EXCHANGE, SSL_R_UNEXPECTED_MESSAGE);
+        goto err;
     } else if (alg_k) {
         SSLfatal(s, SSL_AD_UNEXPECTED_MESSAGE, SSL_F_TLS_PROCESS_KEY_EXCHANGE,
                  SSL_R_UNEXPECTED_MESSAGE);
@@ -3066,6 +3071,70 @@ static int tls_construct_cke_rsa(SSL *s, WPACKET *pkt)
 #endif
 }
 
+static int tls_construct_cke_kem(SSL *s, WPACKET *pkt) {
+    unsigned char *encdata = NULL;
+    EVP_PKEY *skey = NULL;
+    EVP_PKEY_CTX *pctx = NULL;
+    size_t enclen;
+    unsigned char *pms = NULL;
+    size_t pmslen = 0;
+
+    puts("Constructing CKE with KEM!");
+
+    if (s->session->peer == NULL) {
+        /*
+         * We should always have a server certificate with SSL_kRSA.
+         */
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
+                 ERR_R_INTERNAL_ERROR);
+        return 0;
+    }
+
+    skey = X509_get0_pubkey(s->session->peer);
+    if (EVP_PKEY_get0(skey) == NULL) {
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
+                 ERR_R_INTERNAL_ERROR);
+        return 0;
+    }
+
+    pctx = EVP_PKEY_CTX_new(skey, NULL);
+
+    if (pctx == NULL || EVP_PKEY_encapsulate_init(pctx) <= 0
+        || EVP_PKEY_encapsulate_set_peer(pctx, skey)
+        || EVP_PKEY_encapsulate(pctx, NULL, NULL, &pmslen, &enclen) <= 0) {
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
+                 ERR_R_EVP_LIB);
+        goto err;
+    }
+
+    if (!WPACKET_allocate_bytes(pkt, enclen, &encdata)
+            || EVP_PKEY_encapsulate(pctx, pms, encdata, &pmslen, &enclen) <= 0) {
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
+                 SSL_R_BAD_RSA_ENCRYPT);
+        goto err;
+    }
+
+    EVP_PKEY_CTX_free(pctx);
+    pctx = NULL;
+
+    /* Fix buf for TLS and beyond */
+    if (s->version > SSL3_VERSION && !WPACKET_close(pkt)) {
+        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
+                 ERR_R_INTERNAL_ERROR);
+        goto err;
+    }
+
+    s->s3->tmp.pms = pms;
+    s->s3->tmp.pmslen = pmslen;
+
+    return 1;
+  err:
+    OPENSSL_clear_free(pms, pmslen);
+    EVP_PKEY_CTX_free(pctx);
+
+    return 0;
+}
+
 static int tls_construct_cke_dhe(SSL *s, WPACKET *pkt)
 {
 #ifndef OPENSSL_NO_DH
@@ -3353,6 +3422,9 @@ int tls_construct_client_key_exchange(SSL *s, WPACKET *pkt)
             goto err;
     } else if (alg_k & SSL_kSRP) {
         if (!tls_construct_cke_srp(s, pkt))
+            goto err;
+    } else if (alg_k & SSL_kKEM) {
+        if (!tls_construct_cke_kem(s, pkt))
             goto err;
     } else if (!(alg_k & SSL_kPSK)) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR,

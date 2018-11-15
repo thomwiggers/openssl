@@ -318,7 +318,7 @@ int EVP_PKEY_encapsulate_init(EVP_PKEY_CTX *ctx) {
 }
 
 int EVP_PKEY_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen) {
-    if (!ctx || !ctx->pmeth || !ctx->pmeth->decapsulate) {
+    if (!ctx || !ctx->pmeth || !ctx->pmeth->encapsulate) {
         EVPerr(EVP_F_EVP_PKEY_ENCAPSULATE,
                EVP_R_OPERATION_NOT_SUPPORTED_FOR_THIS_KEYTYPE);
         return -2;
