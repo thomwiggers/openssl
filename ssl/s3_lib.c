@@ -126,13 +126,14 @@ static SSL_CIPHER tls13_ciphers[] = {
  *      Weak ciphers
  */
 static SSL_CIPHER ssl3_ciphers[] = {
-    /*  FIXME add cipher spec here.
+    /*  FIXME(Thom) add OQS cipher spec here. */
+    // FIXME(Thom) check what the formatting of these names is and where they come from
     {1,
-    OQS_TXT_KYBER512_KEM_AES_128_GCM_SHA256,
-    OQS_RFC_KYBER512_KEM_AES_128_GCM_SHA256,
-    OQS_CK_KYBER512_KEM_AES_128_GCM_SHA256,
+     OQS_TXT_KYBER512_KEM_AES_128_GCM_SHA256,
+     OQS_RFC_KYBER512_KEM_AES_128_GCM_SHA256,
+     OQS_CK_KYBER512_KEM_AES_128_GCM_SHA256,
      SSL_kKEM,
-     SSL_aKEM
+     SSL_aKEM,
      SSL_AES128GCM,
      SSL_SHA256,
      SSL3_VERSION, TLS1_2_VERSION,
@@ -142,7 +143,6 @@ static SSL_CIPHER ssl3_ciphers[] = {
      128,
      128,
     },
-    */
     {
      1,
      SSL3_TXT_RSA_NULL_MD5,

@@ -986,7 +986,7 @@ static const SIGALG_LOOKUP sigalg_lookup_tbl[] = {
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
     {"kyber512", TLSEXT_SIGALG_kyber512,
-        NID_undef, -1, EVP_PKEY_KYBER512, SSL_PKEY_KYBER512,
+        NID_undef, -1, EVP_PKEY_KYBER512, SSL_PKEY_KEM,
         NID_undef, NID_undef},
 };
 /* Legacy sigalgs for TLS < 1.2 RSA TLS signatures */

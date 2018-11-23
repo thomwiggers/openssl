@@ -50,6 +50,9 @@ int ERR_load_DH_strings(void);
 #  define DH_F_PKEY_DH_DERIVE                              112
 #  define DH_F_PKEY_DH_INIT                                125
 #  define DH_F_PKEY_DH_KEYGEN                              113
+#  define DH_F_PKEY_OQS_CTRL                               127
+#  define DH_F_PKEY_OQS_DECAPSULATE                        128
+#  define DH_F_PKEY_OQS_ENCAPSULATE                        129
 
 /*
  * DH reason codes.

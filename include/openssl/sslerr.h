@@ -416,6 +416,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_F_TLS_PROCESS_CKE_DHE                        411
 # define SSL_F_TLS_PROCESS_CKE_ECDHE                      412
 # define SSL_F_TLS_PROCESS_CKE_GOST                       413
+# define SSL_F_TLS_PROCESS_CKE_KEM                        640
 # define SSL_F_TLS_PROCESS_CKE_PSK_PREAMBLE               414
 # define SSL_F_TLS_PROCESS_CKE_RSA                        415
 # define SSL_F_TLS_PROCESS_CKE_SRP                        416
@@ -579,6 +580,8 @@ int ERR_load_SSL_strings(void);
 # define SSL_R_INVALID_SRP_USERNAME                       357
 # define SSL_R_INVALID_STATUS_RESPONSE                    328
 # define SSL_R_INVALID_TICKET_KEYS_LENGTH                 325
+# define SSL_R_KEM_CIPHERTEXT_LENGTH_IS_WRONG             293
+# define SSL_R_KEM_NOT_YET_SUPPORTED                      294
 # define SSL_R_LENGTH_MISMATCH                            159
 # define SSL_R_LENGTH_TOO_LONG                            404
 # define SSL_R_LENGTH_TOO_SHORT                           160
@@ -761,6 +764,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_R_WRONG_SIGNATURE_SIZE                       265
 # define SSL_R_WRONG_SIGNATURE_TYPE                       370
 # define SSL_R_WRONG_SSL_VERSION                          266
+# define SSL_R_WRONG_VERSION                              295
 # define SSL_R_WRONG_VERSION_NUMBER                       267
 # define SSL_R_X509_LIB                                   268
 # define SSL_R_X509_VERIFICATION_SETUP_PROBLEMS           269

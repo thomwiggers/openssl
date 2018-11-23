@@ -44,6 +44,11 @@ static const ERR_STRING_DATA DH_str_functs[] = {
     {ERR_PACK(ERR_LIB_DH, DH_F_PKEY_DH_DERIVE, 0), "pkey_dh_derive"},
     {ERR_PACK(ERR_LIB_DH, DH_F_PKEY_DH_INIT, 0), "pkey_dh_init"},
     {ERR_PACK(ERR_LIB_DH, DH_F_PKEY_DH_KEYGEN, 0), "pkey_dh_keygen"},
+    {ERR_PACK(ERR_LIB_DH, DH_F_PKEY_OQS_CTRL, 0), "pkey_oqs_ctrl"},
+    {ERR_PACK(ERR_LIB_DH, DH_F_PKEY_OQS_DECAPSULATE, 0),
+     "pkey_oqs_decapsulate"},
+    {ERR_PACK(ERR_LIB_DH, DH_F_PKEY_OQS_ENCAPSULATE, 0),
+     "pkey_oqs_encapsulate"},
     {0, NULL}
 };
 

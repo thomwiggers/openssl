@@ -146,6 +146,9 @@ extern "C" {
 # define SSL_TXT_TLSV1_1         "TLSv1.1"
 # define SSL_TXT_TLSV1_2         "TLSv1.2"
 
+/* OQS */
+# define SSL_TXT_KEM            "KEM"
+
 # define SSL_TXT_ALL             "ALL"
 
 /*-

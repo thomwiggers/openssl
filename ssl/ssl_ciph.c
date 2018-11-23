@@ -229,6 +229,9 @@ static const SSL_CIPHER cipher_aliases[] = {
     {0, SSL_TXT_kSRP, NULL, 0, SSL_kSRP},
     {0, SSL_TXT_kGOST, NULL, 0, SSL_kGOST},
 
+    /* Add KEM filter here */
+    {0, SSL_TXT_KEM, NULL, 0, SSL_kKEM, SSL_aKEM},
+
     /* server authentication aliases */
     {0, SSL_TXT_aRSA, NULL, 0, 0, SSL_aRSA},
     {0, SSL_TXT_aDSS, NULL, 0, 0, SSL_aDSS},

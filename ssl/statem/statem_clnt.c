@@ -2307,10 +2307,10 @@ MSG_PROCESS_RETURN tls_process_key_exchange(SSL *s, PACKET *pkt)
             /* SSLfatal() already called */
             goto err;
         }
-    } else if (alg_k & (SSL_kKEM)) {
-        // FIXME(Thom): Add KEM here.
-        // Client needs to encapsulate against the server's certificate (!)
-        SSLfatal(s, SSL_AD_UNEXPECTED_MESSAGE, SSL_F_TLS_PROCESS_KEY_EXCHANGE, SSL_R_UNEXPECTED_MESSAGE);
+    } else if (alg_k & SSL_kKEM) {
+        // FIXME(Thom): This would were ephemeral kem keys supplied by the server would go.
+        SSLfatal(s, SSL_AD_UNEXPECTED_MESSAGE, SSL_F_TLS_PROCESS_KEY_EXCHANGE,
+                 SSL_R_KEM_NOT_YET_SUPPORTED);
         goto err;
     } else if (alg_k) {
         SSLfatal(s, SSL_AD_UNEXPECTED_MESSAGE, SSL_F_TLS_PROCESS_KEY_EXCHANGE,

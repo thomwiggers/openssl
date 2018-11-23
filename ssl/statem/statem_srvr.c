@@ -3138,10 +3138,11 @@ static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
     EVP_PKEY *skey = NULL;
     EVP_PKEY *ckey = NULL;
     EVP_PKEY_CTX *sctx = NULL;
-    PACKET ciphertext = NULL;
+    PACKET ciphertext;
     unsigned char *key = NULL;
     unsigned int i = 0;
-    unsigned int keylen;
+    int rv;
+    size_t keylen;
 
     // FIXME(Thom): process CKE with KEM ciphertext
     // obtain server certificate private key
@@ -3151,17 +3152,17 @@ static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
     if (!PACKET_get_net_2(pkt, &i) || PACKET_remaining(pkt) != i) {
         SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
                SSL_R_KEM_CIPHERTEXT_LENGTH_IS_WRONG);
-        goto err;
+        return 0;
     }
 
     /* Assume > SSLv3: length is specified */
     if (s->version == SSL3_VERSION || s->version == DTLS1_BAD_VER) {
-        SSLfatal(s, SSL_AD_DECODE_ERROR, S_F_TLS_PROCESS_CKE_KEM,
+        SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
                 SSL_R_WRONG_VERSION);
     }
-    if (!PACKET_get_length_prefixed_2(pkt, &ciphertext_pkt)
+    if (!PACKET_get_length_prefixed_2(pkt, &ciphertext)
             || PACKET_remaining(pkt) != 0) {
-        SSLfatal(s, SSL_AD_DECODE_ERROR, S_F_TLS_PROCESS_CKE_KEM,
+        SSLfatal(s, SSL_AD_DECODE_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
                 SSL_R_LENGTH_MISMATCH);
         return 0;
     }
@@ -3178,7 +3179,7 @@ static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
     }
 
     // decapsulate ciphertext
-    EVP_PKEY_decapsulate(sctx, key, PACKET_data(ciphertext), &keylen);
+    EVP_PKEY_decapsulate(sctx, key, PACKET_data(&ciphertext), &keylen);
 
     // FIXME fix master secret generation
     rv = ssl_generate_master_secret(s, key, keylen, 0);

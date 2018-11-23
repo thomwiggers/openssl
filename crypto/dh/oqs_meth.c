@@ -458,14 +458,14 @@ static int pkey_oqs_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned 
         return 1;
     }
     if (key == NULL || ciphertext == NULL) {
-        DHerr(DH_F_PKEY_OQS_ENCAPSULATE, DH_R_FATAL);
+        DHerr(DH_F_PKEY_OQS_ENCAPSULATE, ERR_R_FATAL);
     }
 
     if (OQS_KEM_encaps(oqs_key->k, key, ciphertext, oqs_peer->pubkey) == OQS_SUCCESS) {
         return 1;
     }
 
-    DHerr(DH_F_PKEY_OQS_ENCAPSULATE, DH_R_FATAL);
+    DHerr(DH_F_PKEY_OQS_ENCAPSULATE, ERR_R_FATAL);
     return 0;
 }
 
@@ -481,7 +481,7 @@ static int pkey_oqs_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const uns
         return 1;
     }
 
-    DHerr(DH_F_PKEY_OQS_DECAPSULATE, DH_R_FATAL);
+    DHerr(DH_F_PKEY_OQS_DECAPSULATE, ERR_R_FATAL);
     return 0;
 }
 
@@ -541,9 +541,9 @@ const EVP_PKEY_METHOD ALG##_pkey_meth = {             \
     0, 0,   /* public_check, param_check */           \
     0,      /* digest_custom */                       \
     0,      /* encapsulate_init */                    \
-    oqs_pkey_encapsulate, /* encapsulate */           \
+    pkey_oqs_encapsulate, /* encapsulate */           \
     0,      /* decapsulate_init */                    \
-    oqs_pkey_decapsulate, /* decapsulate */           \
+    pkey_oqs_decapsulate, /* decapsulate */           \
 };
 
 
