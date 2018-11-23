@@ -595,7 +595,6 @@ static const ssl_trace_tbl ssl_groups_tbl[] = {
     {OQS_KEM_CURVEID(NID_OQS_p256_KEM_DEFAULT), "p256 - OQS KEM default hybrid"},
 #if !defined(OQS_NIST_BRANCH)
     {OQS_KEM_CURVEID(NID_OQS_p256_SIKE_503), "p256 - sike503 hybrid"},
-#ifndef OQS_NIST_BRANCH
     {OQS_KEM_CURVEID(NID_OQS_p256_SIDH_503), "p256 - sidh503 hybrid"},
 #endif
     {OQS_KEM_CURVEID(NID_OQS_p256_Frodo_640_AES), "p256 - frodo640aes hybrid"},
