@@ -3160,8 +3160,6 @@ static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
         return 0;
     }
 
-    fprintf(stderr, "remaining = %d\n", i);
-
     // FIXME(Thom): Verify length of ciphertext?
     if (!EVP_PKEY_decapsulate_init(sctx)) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
