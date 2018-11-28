@@ -83,6 +83,7 @@ static const ERR_STRING_DATA DH_str_reasons[] = {
     {ERR_PACK(ERR_LIB_DH, 0, DH_R_NOT_SUITABLE_GENERATOR),
     "not suitable generator"},
     {ERR_PACK(ERR_LIB_DH, 0, DH_R_NO_PARAMETERS_SET), "no parameters set"},
+    {ERR_PACK(ERR_LIB_DH, 0, DH_R_NO_PRIVATE_KEY), "no private key"},
     {ERR_PACK(ERR_LIB_DH, 0, DH_R_NO_PRIVATE_VALUE), "no private value"},
     {ERR_PACK(ERR_LIB_DH, 0, DH_R_PARAMETER_ENCODING_ERROR),
     "parameter encoding error"},

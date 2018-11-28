@@ -78,6 +78,7 @@ int ERR_load_DH_strings(void);
 #  define DH_R_MODULUS_TOO_LARGE                           103
 #  define DH_R_NOT_SUITABLE_GENERATOR                      120
 #  define DH_R_NO_PARAMETERS_SET                           107
+#  define DH_R_NO_PRIVATE_KEY                              126
 #  define DH_R_NO_PRIVATE_VALUE                            100
 #  define DH_R_PARAMETER_ENCODING_ERROR                    105
 #  define DH_R_PEER_KEY_ERROR                              111

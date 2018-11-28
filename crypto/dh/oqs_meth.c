@@ -442,6 +442,10 @@ static int pkey_oqs_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const uns
     OQS_KEY *oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
     *keylen = oqs_size(ctx->pkey);
 
+    if (oqs_key->privkey == NULL) {
+        DHerr(DH_F_PKEY_OQS_DECAPSULATE, DH_R_NO_PRIVATE_KEY);
+    }
+
     if (key == NULL) {
         return 1;
     }

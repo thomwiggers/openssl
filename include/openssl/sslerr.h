@@ -541,6 +541,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_R_ECDH_REQUIRED_FOR_SUITEB_MODE              374
 # define SSL_R_EE_KEY_TOO_SMALL                           399
 # define SSL_R_EMPTY_SRTP_PROTECTION_PROFILE_LIST         354
+# define SSL_R_ENCAPSULATION_FAILED                       299
 # define SSL_R_ENCRYPTED_LENGTH_TOO_LONG                  150
 # define SSL_R_ERROR_IN_RECEIVED_CIPHER_LIST              151
 # define SSL_R_ERROR_SETTING_TLSA_BASE_DOMAIN             204
@@ -561,6 +562,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_R_INCONSISTENT_EARLY_DATA_ALPN               222
 # define SSL_R_INCONSISTENT_EARLY_DATA_SNI                231
 # define SSL_R_INCONSISTENT_EXTMS                         104
+# define SSL_R_INITIALISATION_FAILED                      296
 # define SSL_R_INSUFFICIENT_SECURITY                      241
 # define SSL_R_INVALID_ALERT                              205
 # define SSL_R_INVALID_CCS_MESSAGE                        260
@@ -617,6 +619,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_R_NO_GOST_CERTIFICATE_SENT_BY_PEER           330
 # define SSL_R_NO_METHOD_SPECIFIED                        188
 # define SSL_R_NO_PEM_EXTENSIONS                          389
+# define SSL_R_NO_PRIVATE_KEY                             297
 # define SSL_R_NO_PRIVATE_KEY_ASSIGNED                    190
 # define SSL_R_NO_PROTOCOLS_AVAILABLE                     191
 # define SSL_R_NO_RENEGOTIATION                           339
@@ -634,6 +637,7 @@ int ERR_load_SSL_strings(void);
 # define SSL_R_OLD_SESSION_CIPHER_NOT_RETURNED            197
 # define SSL_R_OLD_SESSION_COMPRESSION_ALGORITHM_NOT_RETURNED 344
 # define SSL_R_OVERFLOW_ERROR                             237
+# define SSL_R_PACKET_FAILED                              305
 # define SSL_R_PACKET_LENGTH_TOO_LONG                     198
 # define SSL_R_PARSE_TLSEXT                               227
 # define SSL_R_PATH_TOO_LONG                              270

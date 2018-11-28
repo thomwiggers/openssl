@@ -3101,7 +3101,8 @@ static int tls_construct_cke_kem(SSL *s, WPACKET *pkt) {
 
     pctx = EVP_PKEY_CTX_new(skey, NULL);
 
-    if (pctx == NULL || EVP_PKEY_encapsulate_init(pctx) <= 0
+    if (pctx == NULL
+        || EVP_PKEY_encapsulate_init(pctx) <= 0
         || EVP_PKEY_encapsulate_set_peer(pctx, skey) <= 0
         || EVP_PKEY_encapsulate(pctx, NULL, NULL, &pmslen, &ctlen) <= 0) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
@@ -3110,11 +3111,11 @@ static int tls_construct_cke_kem(SSL *s, WPACKET *pkt) {
     }
 
     pms = OPENSSL_secure_malloc(pmslen);
-    if (!WPACKET_allocate_bytes(pkt, ctlen, &ciphertext)
-            || pms == NULL
+    if (pms == NULL
+            || !WPACKET_sub_allocate_bytes_u16(pkt, ctlen, &ciphertext)
             || EVP_PKEY_encapsulate(pctx, pms, ciphertext, &pmslen, &ctlen) <= 0) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
-                 SSL_R_BAD_RSA_ENCRYPT);
+                 SSL_R_ENCAPSULATION_FAILED);
         goto err;
     }
 

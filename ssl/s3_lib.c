@@ -134,7 +134,7 @@ static SSL_CIPHER ssl3_ciphers[] = {
      SSL_kKEM,
      SSL_aKEM,
      SSL_AES128GCM,
-     SSL_SHA256,
+     SSL_AEAD,
      SSL3_VERSION, TLS1_2_VERSION,
      0, 0,
      SSL_HIGH,
@@ -142,6 +142,8 @@ static SSL_CIPHER ssl3_ciphers[] = {
      128,
      128,
     },
+// FIXME(Thom) Hacked out all the other stuff
+#ifndef NOTDEFINED
     {
      1,
      SSL3_TXT_RSA_NULL_MD5,
@@ -3191,6 +3193,7 @@ static SSL_CIPHER ssl3_ciphers[] = {
      256,
      },
 #endif /* OPENSSL_NO_ARIA */
+#endif
 };
 
 /*

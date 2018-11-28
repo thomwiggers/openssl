@@ -2088,6 +2088,7 @@ DH_R_MISSING_PUBKEY:125:missing pubkey
 DH_R_MODULUS_TOO_LARGE:103:modulus too large
 DH_R_NOT_SUITABLE_GENERATOR:120:not suitable generator
 DH_R_NO_PARAMETERS_SET:107:no parameters set
+DH_R_NO_PRIVATE_KEY:126:no private key
 DH_R_NO_PRIVATE_VALUE:100:no private value
 DH_R_PARAMETER_ENCODING_ERROR:105:parameter encoding error
 DH_R_PEER_KEY_ERROR:111:peer key error
@@ -2675,6 +2676,7 @@ SSL_R_ECC_CERT_NOT_FOR_SIGNING:318:ecc cert not for signing
 SSL_R_ECDH_REQUIRED_FOR_SUITEB_MODE:374:ecdh required for suiteb mode
 SSL_R_EE_KEY_TOO_SMALL:399:ee key too small
 SSL_R_EMPTY_SRTP_PROTECTION_PROFILE_LIST:354:empty srtp protection profile list
+SSL_R_ENCAPSULATION_FAILED:299:encapsulation failed
 SSL_R_ENCRYPTED_LENGTH_TOO_LONG:150:encrypted length too long
 SSL_R_ERROR_IN_RECEIVED_CIPHER_LIST:151:error in received cipher list
 SSL_R_ERROR_SETTING_TLSA_BASE_DOMAIN:204:error setting tlsa base domain
@@ -2695,6 +2697,7 @@ SSL_R_INCONSISTENT_COMPRESSION:340:inconsistent compression
 SSL_R_INCONSISTENT_EARLY_DATA_ALPN:222:inconsistent early data alpn
 SSL_R_INCONSISTENT_EARLY_DATA_SNI:231:inconsistent early data sni
 SSL_R_INCONSISTENT_EXTMS:104:inconsistent extms
+SSL_R_INITIALISATION_FAILED:296:initialisation failed
 SSL_R_INSUFFICIENT_SECURITY:241:insufficient security
 SSL_R_INVALID_ALERT:205:invalid alert
 SSL_R_INVALID_CCS_MESSAGE:260:invalid ccs message
@@ -2752,6 +2755,7 @@ SSL_R_NO_GOST_CERTIFICATE_SENT_BY_PEER:330:\
 	Peer haven't sent GOST certificate, required for selected ciphersuite
 SSL_R_NO_METHOD_SPECIFIED:188:no method specified
 SSL_R_NO_PEM_EXTENSIONS:389:no pem extensions
+SSL_R_NO_PRIVATE_KEY:297:no private key
 SSL_R_NO_PRIVATE_KEY_ASSIGNED:190:no private key assigned
 SSL_R_NO_PROTOCOLS_AVAILABLE:191:no protocols available
 SSL_R_NO_RENEGOTIATION:339:no renegotiation
@@ -2770,6 +2774,7 @@ SSL_R_OLD_SESSION_CIPHER_NOT_RETURNED:197:old session cipher not returned
 SSL_R_OLD_SESSION_COMPRESSION_ALGORITHM_NOT_RETURNED:344:\
 	old session compression algorithm not returned
 SSL_R_OVERFLOW_ERROR:237:overflow error
+SSL_R_PACKET_FAILED:305:packet failed
 SSL_R_PACKET_LENGTH_TOO_LONG:198:packet length too long
 SSL_R_PARSE_TLSEXT:227:parse tlsext
 SSL_R_PATH_TOO_LONG:270:path too long
