@@ -3121,13 +3121,6 @@ static int tls_construct_cke_kem(SSL *s, WPACKET *pkt) {
     EVP_PKEY_CTX_free(pctx);
     pctx = NULL;
 
-    /* Fix buf for TLS and beyond */
-    if (s->version > SSL3_VERSION && !WPACKET_close(pkt)) {
-        SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
-                 ERR_R_INTERNAL_ERROR);
-        goto err;
-    }
-
     s->s3->tmp.pms = pms;
     s->s3->tmp.pmslen = pmslen;
 
