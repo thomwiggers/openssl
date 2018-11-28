@@ -2245,6 +2245,7 @@ WORK_STATE tls_post_process_client_hello(SSL *s, WORK_STATE wst)
                     }
                     s->rwstate = SSL_NOTHING;
                 }
+
                 if (!tls1_set_server_sigalgs(s)) {
                     /* SSLfatal already called */
                     goto err;

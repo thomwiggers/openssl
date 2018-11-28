@@ -404,64 +404,33 @@ static int pkey_oqs_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
 
 }
 
-static int pkey_oqs_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen) {
-    OQS_KEY *oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
-    OQS_KEY *oqs_peer = (OQS_KEY*) ctx->peerkey->pkey.ptr;
-
-    *keylen = oqs_size(ctx->pkey);
-    if (key == NULL) {
-        return 1;
-    }
-    if (oqs_peer->ciphertext) {
-        if (OQS_KEM_decaps(oqs_key->k, key, oqs_peer->ciphertext, oqs_key->privkey) == OQS_SUCCESS) {
-            return 1;
-        }
-    } else {
-        oqs_peer->ciphertext = OPENSSL_malloc(*keylen);
-        if (OQS_KEM_encaps(oqs_key->k, key, oqs_peer->ciphertext, oqs_peer->pubkey) == OQS_SUCCESS) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 static int pkey_oqs_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
 {
-    switch (type) {
-    case EVP_PKEY_CTRL_MD:
-        /* Only NULL allowed as digest */
-        if (p2 == NULL)
-            return 1;
-        DHerr(DH_F_PKEY_OQS_CTRL, ERR_R_FATAL);
-        return 0;
-
-    case EVP_PKEY_CTRL_DIGESTINIT:
-        return 1;
-    }
-    return -2;
+    return 1;
 }
 
 static int pkey_oqs_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen) {
-    OQS_KEY *oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
+    OQS_KEY *oqs_key;
     OQS_KEY *oqs_peer;
 
     if (!ctx->pkey || !ctx->peerkey) {
         DHerr(DH_F_PKEY_OQS_ENCAPSULATE, DH_R_KEYS_NOT_SET);
         return 0;
     }
+
+    oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
     oqs_peer = (OQS_KEY*) ctx->peerkey->pkey.ptr;
 
-    *keylen = oqs_size(oqs_key);
+    *keylen = oqs_key->k->length_shared_secret;
     *ctlen = oqs_key->k->length_ciphertext;
     if (key == NULL && ciphertext == NULL) {
         return 1;
     }
-    if (key == NULL || ciphertext == NULL) {
+    if (key == NULL || ciphertext == NULL || oqs_peer->pubkey == NULL) {
         DHerr(DH_F_PKEY_OQS_ENCAPSULATE, ERR_R_FATAL);
     }
 
-    if (OQS_KEM_encaps(oqs_key->k, key, ciphertext, oqs_peer->pubkey) == OQS_SUCCESS) {
+    if (OQS_KEM_encaps(oqs_key->k, ciphertext, key, oqs_key->pubkey) == OQS_SUCCESS) {
         return 1;
     }
 
@@ -471,7 +440,7 @@ static int pkey_oqs_encapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, unsigned 
 
 static int pkey_oqs_decapsulate(EVP_PKEY_CTX *ctx, unsigned char *key, const unsigned char *ciphertext, size_t *keylen) {
     OQS_KEY *oqs_key = (OQS_KEY*) ctx->pkey->pkey.ptr;
-    *keylen = oqs_size(oqs_key);
+    *keylen = oqs_size(ctx->pkey);
 
     if (key == NULL) {
         return 1;
@@ -533,8 +502,7 @@ const EVP_PKEY_METHOD ALG##_pkey_meth = {             \
     0, 0,   /* verifyctx_init, verifyctx */           \
     0, 0,   /* encrypt_init, encrypt */               \
     0, 0,   /* decrypt_init, decrypt */               \
-    0,      /* derive_init */                         \
-    pkey_oqs_derive,  /* derive */                    \
+    0, 0,   /* derive_init, derive */                 \
     pkey_oqs_ctrl, 0,   /* ctrl, ctrl_str */          \
     0, 0,   /* digestsign, digestverify */            \
     0,      /* check */                               \

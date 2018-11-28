@@ -217,8 +217,13 @@ static int get_cert_verify_tbs_data(SSL *s, unsigned char *tls13tbs,
     return 1;
 }
 
+// FIXME(Thom) Add KEM certificate hash construction here
 int tls_construct_cert_verify(SSL *s, WPACKET *pkt)
 {
+#ifdef SSL_DEBUG
+    fprintf(stderr, "Running certificate verify generation\n");
+#endif
+
     EVP_PKEY *pkey = NULL;
     const EVP_MD *md = NULL;
     EVP_MD_CTX *mctx = NULL;
@@ -227,7 +232,7 @@ int tls_construct_cert_verify(SSL *s, WPACKET *pkt)
     void *hdata;
     unsigned char *sig = NULL;
     unsigned char tls13tbs[TLS13_TBS_PREAMBLE_SIZE + EVP_MAX_MD_SIZE];
-    const SIGALG_LOOKUP *lu = s->s3->tmp.sigalg;
+    const SIGALG_LOOKUP *lu = s->s3->tmp.sigalg; // TODO(Thom): figure out where this is coming from.
 
     if (lu == NULL || s->s3->tmp.cert == NULL) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CERT_VERIFY,
@@ -332,6 +337,8 @@ int tls_construct_cert_verify(SSL *s, WPACKET *pkt)
     return 0;
 }
 
+
+// FIXME(Thom) Add certificate verification via OPTLS here.
 MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
 {
     EVP_PKEY *pkey = NULL;

@@ -443,6 +443,8 @@ static const ssl_trace_tbl ssl_ciphers_tbl[] = {
     {0xFEFF, "SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA"},
     {0xFF85, "GOST2012-GOST8912-GOST8912"},
     {0xFF87, "GOST2012-NULL-GOST12"},
+    /* FIXME(Thom): Add more KEM-based encryption methods here */
+    {0x00F1, "KEM_AES_128_GCM_SHA256"},
 };
 
 /* Compression methods */

@@ -127,11 +127,10 @@ static SSL_CIPHER tls13_ciphers[] = {
  */
 static SSL_CIPHER ssl3_ciphers[] = {
     /*  FIXME(Thom) add OQS cipher spec here. */
-    // FIXME(Thom) check what the formatting of these names is and where they come from
     {1,
-     OQS_TXT_KYBER512_KEM_AES_128_GCM_SHA256,
-     OQS_RFC_KYBER512_KEM_AES_128_GCM_SHA256,
-     OQS_CK_KYBER512_KEM_AES_128_GCM_SHA256,
+     OQS_TXT_KEM_AES_128_GCM_SHA256,
+     OQS_RFC_KEM_AES_128_GCM_SHA256,
+     OQS_CK_KEM_AES_128_GCM_SHA256,
      SSL_kKEM,
      SSL_aKEM,
      SSL_AES128GCM,

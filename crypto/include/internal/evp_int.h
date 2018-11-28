@@ -93,7 +93,7 @@ struct evp_pkey_method_st {
     int (*encapsulate_init) (EVP_PKEY_CTX *ctx);
     int (*encapsulate) (EVP_PKEY_CTX *ctx, unsigned char *key, unsigned char *ciphertext, size_t *keylen, size_t *ctlen);
     int (*decapsulate_init) (EVP_PKEY_CTX *ctx);
-    int (*decapsulate) (EVP_PKEY_CTX *ctx, const unsigned char *ciphertext, unsigned char *key, size_t *keylen);
+    int (*decapsulate) (EVP_PKEY_CTX *ctx, unsigned char *key, const unsigned char *ciphertext, size_t *keylen);
 } /* EVP_PKEY_METHOD */ ;
 
 DEFINE_STACK_OF_CONST(EVP_PKEY_METHOD)

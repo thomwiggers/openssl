@@ -824,6 +824,7 @@ static int tls1_check_cert_param(SSL *s, X509 *x, int set_ee_md)
 #endif                          /* OPENSSL_NO_EC */
 
 /* Default sigalg schemes */
+// FIXME(Thom): Do I need to add HMAC here?
 static const uint16_t tls12_sigalgs[] = {
 #ifndef OPENSSL_NO_EC
     TLSEXT_SIGALG_ecdsa_secp256r1_sha256,
@@ -840,7 +841,6 @@ static const uint16_t tls12_sigalgs[] = {
     TLSEXT_SIGALG_qteslaIIIspeed,
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
-    TLSEXT_SIGALG_kyber512,
 
     TLSEXT_SIGALG_rsa_pss_pss_sha256,
     TLSEXT_SIGALG_rsa_pss_pss_sha384,
@@ -985,9 +985,6 @@ static const SIGALG_LOOKUP sigalg_lookup_tbl[] = {
      NID_undef, NID_undef},
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
-    {"kyber512", TLSEXT_SIGALG_kyber512,
-        NID_undef, -1, EVP_PKEY_KYBER512, SSL_PKEY_KEM,
-        NID_undef, NID_undef},
 };
 /* Legacy sigalgs for TLS < 1.2 RSA TLS signatures */
 static const SIGALG_LOOKUP legacy_rsa_sigalg = {
@@ -2345,6 +2342,7 @@ int tls1_check_chain(SSL *s, X509 *x, EVP_PKEY *pk, STACK_OF(X509) *chain,
     CERT *c = s->cert;
     uint32_t *pvalid;
     unsigned int suiteb_flags = tls1_suiteb(s);
+
     /* idx == -1 means checking server chains */
     if (idx != -1) {
         /* idx == -2 means checking client certificate chains */
@@ -2431,6 +2429,11 @@ int tls1_check_chain(SSL *s, X509 *x, EVP_PKEY *pk, STACK_OF(X509) *chain,
             case SSL_PKEY_GOST12_512:
                 rsign = NID_id_GostR3410_2012_512;
                 default_nid = NID_id_tc26_signwithdigest_gost3410_2012_512;
+                break;
+            case SSL_PKEY_KEM:
+                puts("not sure if this should even run");
+                rsign = EVP_PKEY_HMAC;
+                default_nid = NID_hmacWithSHA256;
                 break;
 
             default:
@@ -2599,6 +2602,7 @@ void tls1_set_cert_validity(SSL *s)
     tls1_check_chain(s, NULL, NULL, NULL, SSL_PKEY_QTESLAIIISPEED);
     /* ADD_MORE_OQS_SIG_HERE */
 #endif
+    tls1_check_chain(s, NULL, NULL, NULL, SSL_PKEY_KEM);
 }
 
 /* User level utility function to check a chain is suitable */
@@ -2743,6 +2747,7 @@ static int tls12_get_cert_sigalg_idx(const SSL *s, const SIGALG_LOOKUP *lu)
 {
     int sig_idx = lu->sig_idx;
     const SSL_CERT_LOOKUP *clu = ssl_cert_lookup_by_idx(sig_idx);
+    fprintf(stderr, "clu->amask & auth? %d\n", clu->amask & s->s3->tmp.new_cipher->algorithm_auth);
 
     /* If not recognised or not supported by cipher mask it is not suitable */
     if (clu == NULL
@@ -2804,6 +2809,7 @@ static int has_usable_cert(SSL *s, const SIGALG_LOOKUP *sig, int idx)
  * a fatal error: we will either try another certificate or not present one
  * to the server. In this case no error is set.
  */
+// FIXME(Thom) Add HMAC
 int tls_choose_sigalg(SSL *s, int fatalerrs)
 {
     const SIGALG_LOOKUP *lu = NULL;
@@ -2867,6 +2873,14 @@ int tls_choose_sigalg(SSL *s, int fatalerrs)
             return 1;
         if (!s->server && !ssl_has_cert(s, s->cert->key - s->cert->pkeys))
                 return 1;
+        /* KEM certs authenticate themselves via HMAC, not a signature */
+        // FIXME(Thom): Not sure yet if we can just ignore the whole thing.
+        if (s->s3->tmp.new_cipher->algorithm_auth & SSL_aKEM) {
+            // FIXME is this the best place to set this stuff?
+            s->s3->tmp.cert = &s->cert->pkeys[SSL_PKEY_KEM];
+            s->cert->key = s->s3->tmp.cert;
+            return 1;
+        }
 
         if (SSL_USE_SIGALGS(s)) {
             size_t i;
@@ -2891,8 +2905,9 @@ int tls_choose_sigalg(SSL *s, int fatalerrs)
                     lu = s->cert->shared_sigalgs[i];
 
                     if (s->server) {
-                        if ((sig_idx = tls12_get_cert_sigalg_idx(s, lu)) == -1)
+                        if ((sig_idx = tls12_get_cert_sigalg_idx(s, lu)) == -1) {
                             continue;
+                        }
                     } else {
                         int cc_idx = s->cert->key - s->cert->pkeys;
 
@@ -2901,8 +2916,9 @@ int tls_choose_sigalg(SSL *s, int fatalerrs)
                             continue;
                     }
                     /* Check that we have a cert, and sig_algs_cert */
-                    if (!has_usable_cert(s, lu, sig_idx))
+                    if (!has_usable_cert(s, lu, sig_idx)) {
                         continue;
+                    }
                     if (lu->sig == EVP_PKEY_RSA_PSS) {
                         /* validate that key is large enough for the signature algorithm */
                         EVP_PKEY *pkey = s->cert->pkeys[sig_idx].privatekey;

@@ -3218,7 +3218,7 @@ void ssl_set_masks(SSL *s)
     int rsa_enc, rsa_sign, dh_tmp, dsa_sign;
     unsigned long mask_k, mask_a;
 #ifndef OPENSSL_NO_EC
-    int have_ecc_cert, ecdsa_ok;
+    int have_ecc_cert, have_kem_cert, ecdsa_ok;
 #endif
     if (c == NULL)
         return;
@@ -3235,6 +3235,8 @@ void ssl_set_masks(SSL *s)
 #ifndef OPENSSL_NO_EC
     have_ecc_cert = pvalid[SSL_PKEY_ECC] & CERT_PKEY_VALID;
 #endif
+    have_kem_cert = pvalid[SSL_PKEY_KEM] & CERT_PKEY_VALID;
+
     mask_k = 0;
     mask_a = 0;
 
@@ -3312,6 +3314,11 @@ void ssl_set_masks(SSL *s)
 #ifndef OPENSSL_NO_EC
     mask_k |= SSL_kECDHE;
 #endif
+
+    if (have_kem_cert) {
+        mask_k |= SSL_kKEM;
+        mask_a |= SSL_aKEM;
+    }
 
 #ifndef OPENSSL_NO_PSK
     mask_k |= SSL_kPSK;

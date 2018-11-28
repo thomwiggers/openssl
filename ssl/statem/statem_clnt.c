@@ -3071,19 +3071,21 @@ static int tls_construct_cke_rsa(SSL *s, WPACKET *pkt)
 #endif
 }
 
+// inspired by tls_construct_cke_rsa
+// FIXME(Thom) to check the certificate we may already have needed to construct this certificate...
 static int tls_construct_cke_kem(SSL *s, WPACKET *pkt) {
-    unsigned char *encdata = NULL;
+    unsigned char *ciphertext = NULL;
     EVP_PKEY *skey = NULL;
     EVP_PKEY_CTX *pctx = NULL;
-    size_t enclen;
+    size_t ctlen;
     unsigned char *pms = NULL;
     size_t pmslen = 0;
 
-    puts("Constructing CKE with KEM!");
+    fprintf(stderr, "Constructing CKE with KEM!\n");
 
     if (s->session->peer == NULL) {
         /*
-         * We should always have a server certificate with SSL_kRSA.
+         * We should always have a server certificate with SSL_kKEM.
          */
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
                  ERR_R_INTERNAL_ERROR);
@@ -3100,15 +3102,17 @@ static int tls_construct_cke_kem(SSL *s, WPACKET *pkt) {
     pctx = EVP_PKEY_CTX_new(skey, NULL);
 
     if (pctx == NULL || EVP_PKEY_encapsulate_init(pctx) <= 0
-        || EVP_PKEY_encapsulate_set_peer(pctx, skey)
-        || EVP_PKEY_encapsulate(pctx, NULL, NULL, &pmslen, &enclen) <= 0) {
+        || EVP_PKEY_encapsulate_set_peer(pctx, skey) <= 0
+        || EVP_PKEY_encapsulate(pctx, NULL, NULL, &pmslen, &ctlen) <= 0) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
                  ERR_R_EVP_LIB);
         goto err;
     }
 
-    if (!WPACKET_allocate_bytes(pkt, enclen, &encdata)
-            || EVP_PKEY_encapsulate(pctx, pms, encdata, &pmslen, &enclen) <= 0) {
+    pms = OPENSSL_secure_malloc(pmslen);
+    if (!WPACKET_allocate_bytes(pkt, ctlen, &ciphertext)
+            || pms == NULL
+            || EVP_PKEY_encapsulate(pctx, pms, ciphertext, &pmslen, &ctlen) <= 0) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_CONSTRUCT_CKE_KEM,
                  SSL_R_BAD_RSA_ENCRYPT);
         goto err;

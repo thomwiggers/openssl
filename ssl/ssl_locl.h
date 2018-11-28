@@ -406,7 +406,8 @@
 /* ADD_MORE_OQS_SIG_HERE */
 # define SSL_PKEY_NUM            14
 #else
-# define SSL_PKEY_KEM            13
+/* Start counting at 9 */
+# define SSL_PKEY_KEM            9
 # define SSL_PKEY_NUM            10
 #endif
 /*
@@ -2427,7 +2428,6 @@ typedef enum downgrade_en {
 #define TLSEXT_SIGALG_qteslaIIIspeed                            0xfe03 /* private use code point */
 /* ADD_MORE_OQS_SIG_HERE */
 #endif
-#define TLSEXT_SIGALG_kyber512                                  0xfe13 /* private use code point */
 
 /* Known PSK key exchange modes */
 #define TLSEXT_KEX_MODE_KE                                      0x00
