@@ -3139,7 +3139,6 @@ static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
     EVP_PKEY *skey = NULL;
     EVP_PKEY_CTX *sctx = NULL;
     unsigned char *key = NULL;
-    PACKET *ciphertext = NULL;
     unsigned int i = 0;
     int rv;
     size_t keylen;
@@ -3161,6 +3160,7 @@ static int tls_process_cke_kem(SSL *s, PACKET *pkt) {
     }
 
     // FIXME(Thom): Verify length of ciphertext?
+
     if (!EVP_PKEY_decapsulate_init(sctx)) {
         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_PROCESS_CKE_KEM,
                  SSL_R_INITIALISATION_FAILED);
