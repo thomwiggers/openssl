@@ -1619,6 +1619,7 @@ EXT_RETURN tls_construct_stoc_next_proto_neg(SSL *s, WPACKET *pkt,
 EXT_RETURN tls_construct_stoc_alpn(SSL *s, WPACKET *pkt, unsigned int context,
                                    X509 *x, size_t chainidx)
 {
+    return EXT_RETURN_NOT_SENT;
     if (s->s3->alpn_selected == NULL)
         return EXT_RETURN_NOT_SENT;
 
