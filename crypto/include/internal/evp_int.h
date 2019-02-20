@@ -103,6 +103,7 @@ extern const EVP_PKEY_METHOD tls1_prf_pkey_meth;
 extern const EVP_PKEY_METHOD hkdf_pkey_meth;
 extern const EVP_PKEY_METHOD poly1305_pkey_meth;
 extern const EVP_PKEY_METHOD siphash_pkey_meth;
+extern const EVP_PKEY_METHOD csidh512_pkey_meth;
 
 struct evp_md_st {
     int type;

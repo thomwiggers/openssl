@@ -67,6 +67,7 @@ static const EVP_PKEY_METHOD *standard_methods[] = {
 #ifndef OPENSSL_NO_SM2
     &sm2_pkey_meth,
 #endif
+    &csidh512_pkey_meth,
 };
 
 DECLARE_OBJ_BSEARCH_CMP_FN(const EVP_PKEY_METHOD *, const EVP_PKEY_METHOD *,
