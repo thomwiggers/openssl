@@ -308,9 +308,41 @@ int pkey_csidh_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey) {
     return 1;
 }
 
-int pkey_csidh_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) {
-    return 1;
+int pkey_csidh_ctrl_ctx(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) {
+    if (!ctx || !ctx->pkey) {
+        printf("Shouldn't be null\n");
+        return 0;
+    }
+    switch (type) {
+        case EVP_PKEY_CTRL_PEER_KEY:
+            return 1;
+        default:
+            return -2;
+    }
 }
+
+int pkey_csidh_ctrl(EVP_PKEY *pkey, int type, long int p1, void *p2) {
+    unsigned char *buf;
+
+    if (type == ASN1_PKEY_CTRL_GET1_TLS_ENCPT) {
+        CSIDH_KEY *csidh_key = (CSIDH_KEY*) pkey->pkey.ptr;
+        buf = OPENSSL_malloc(sizeof(csidh_public_key));
+        assert(buf);
+        memcpy(buf, csidh_key->pub, sizeof(csidh_public_key));
+        *((unsigned char**)p2) = buf;
+        printf("p2: %p: %p\n", p2, *(unsigned char**)p2);
+        return csidh_size(pkey);
+    } else if (type == ASN1_PKEY_CTRL_SET1_TLS_ENCPT) {
+        csidh_key_init((CSIDH_KEY**)&pkey->pkey.ptr, NID_csidh512, KEY_TYPE_PUBLIC);
+        CSIDH_KEY *csidh_key = (CSIDH_KEY*) pkey->pkey.ptr;
+        memcpy(csidh_key->pub, p2, sizeof(csidh_key));
+        return csidh_size(pkey);
+    }
+
+    return -2;
+
+}
+
 
 int pkey_csidh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen) {
     CSIDH_KEY *csidh_key = NULL;
@@ -355,6 +387,7 @@ const EVP_PKEY_ASN1_METHOD csidh512_asn1_meth = {
     csidh_cmp_params,
     0, 0,
     csidh_free_pkey,
+    pkey_csidh_ctrl,
 };
 
 const EVP_PKEY_METHOD csidh512_pkey_meth = {
@@ -376,6 +409,5 @@ const EVP_PKEY_METHOD csidh512_pkey_meth = {
     0, 0,   /* encrypt_init, encrypt */
     0, 0,   /* decrypt_init, decrypt */
     0, pkey_csidh_derive,   /* derive_init, derive */
-    pkey_csidh_ctrl,   /* ctrl, ctrl_str */
+    pkey_csidh_ctrl_ctx,   /* ctrl, ctrl_str */
 };
-

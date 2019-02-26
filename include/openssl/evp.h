@@ -63,6 +63,7 @@
 # define EVP_PKEY_ED25519 NID_ED25519
 # define EVP_PKEY_X448 NID_X448
 # define EVP_PKEY_ED448 NID_ED448
+# define EVP_PKEY_csidh512 NID_csidh512
 
 #ifdef  __cplusplus
 extern "C" {

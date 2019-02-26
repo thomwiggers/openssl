@@ -22,5 +22,6 @@ static const SSL_CERT_LOOKUP ssl_cert_info [] = {
     {EVP_PKEY_ED448, SSL_aECDSA}, /* SSL_PKEY_ED448 */
     {EVP_PKEY_X25519, SSL_aDH}, /* SSL_PKEY_X25519 */
     {EVP_PKEY_X448, SSL_aDH}, /* SSL_PKEY_ED448 */
-    {EVP_PKEY_ECX, SSL_aDH} /* SSL_PKEY_ED448 */
+    {EVP_PKEY_ECX, SSL_aDH}, /* SSL_PKEY_ED448 */
+    {EVP_PKEY_csidh512, SSL_aDH},
 };

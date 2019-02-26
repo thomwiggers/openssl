@@ -393,8 +393,8 @@
 # define SSL_PKEY_X25519         9
 # define SSL_PKEY_X448           10
 # define SSL_PKEY_ECCX           11
-# define SSL_PKEY_NUM            12
-# define SSL_PKEY_NUM            12
+# define SSL_PKEY_CSIDH          12
+# define SSL_PKEY_NUM            13
 /* Where DH certificates start */
 # define SSL_PKEY_DH_CERT_START  9
 /*

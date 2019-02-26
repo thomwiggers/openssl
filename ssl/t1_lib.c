@@ -183,6 +183,7 @@ static const TLS_GROUP_INFO nid_list[] = {
     {NID_brainpoolP512r1, 256, TLS_CURVE_PRIME}, /* brainpool512r1 (28) */
     {EVP_PKEY_X25519, 128, TLS_CURVE_CUSTOM}, /* X25519 (29) */
     {EVP_PKEY_X448, 224, TLS_CURVE_CUSTOM}, /* X448 (30) */
+    {NID_csidh512, 128, TLS_CURVE_CUSTOM}, /* csidh512 */
 };
 
 static const unsigned char ecformats_default[] = {
@@ -193,6 +194,7 @@ static const unsigned char ecformats_default[] = {
 
 /* The default curves */
 static const uint16_t eccurves_default[] = {
+    31,                      /* CSIDH512 */
     29,                      /* X25519 (29) */
     23,                      /* secp256r1 (23) */
     30,                      /* X448 (30) */
