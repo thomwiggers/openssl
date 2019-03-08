@@ -22,7 +22,7 @@ static void csidh_free(CSIDH_KEY* key) {
     if (key->priv) {
         OPENSSL_secure_clear_free(key->priv, sizeof(csidh_private_key));
     }
-    
+
     if (key->pub) {
         OPENSSL_free(key->pub);
     }
@@ -330,12 +330,12 @@ int pkey_csidh_ctrl(EVP_PKEY *pkey, int type, long int p1, void *p2) {
         assert(buf);
         memcpy(buf, csidh_key->pub, sizeof(csidh_public_key));
         *((unsigned char**)p2) = buf;
-        printf("p2: %p: %p\n", p2, *(unsigned char**)p2);
         return csidh_size(pkey);
     } else if (type == ASN1_PKEY_CTRL_SET1_TLS_ENCPT) {
         csidh_key_init((CSIDH_KEY**)&pkey->pkey.ptr, NID_csidh512, KEY_TYPE_PUBLIC);
         CSIDH_KEY *csidh_key = (CSIDH_KEY*) pkey->pkey.ptr;
-        memcpy(csidh_key->pub, p2, sizeof(csidh_key));
+        memcpy(csidh_key->pub, p2, sizeof(csidh_public_key));
+        *((unsigned char**)p2) = buf;
         return csidh_size(pkey);
     }
 
@@ -359,7 +359,6 @@ int pkey_csidh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen) {
     if (key == NULL) {
         return 1;
     }
-
     csidh_derive((csidh_public_key*) key, csidh_peer->pub, csidh_key->priv);
     return 1;
 }
