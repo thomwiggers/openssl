@@ -12,3 +12,7 @@
 ./apps/openssl genpkey -algorithm csidh512 -out csidh.key
 ./apps/openssl pkey -in csidh.key -pubout -out csidh.pub
 ```
+
+To generate certificates using this keypair:
+
+https://security.stackexchange.com/a/82868
