@@ -2058,6 +2058,9 @@ MSG_PROCESS_RETURN tls_process_server_certificate(SSL *s, PACKET *pkt)
             fprintf(stdout, "client_cyclecount: %lu\n", s->client_cyclecount);
     }
 #endif
+    if (!s->server) {
+        THOM_print_time_since_start(s, "PROCESSED SERVER CERTIFICATE");
+    }
     }
     ret = MSG_PROCESS_CONTINUE_READING;
 

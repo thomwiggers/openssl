@@ -324,6 +324,9 @@ int tls_construct_cert_verify(SSL *s, WPACKET *pkt)
             fprintf(stdout, "server_cyclecount: %lu\n", s->server_cyclecount);
     }
 #endif
+    if (s->server){
+        THOM_print_time_since_start(s, "CONSTRUCTED CERT VERIFY");
+    }
 
 #ifndef OPENSSL_NO_GOST
     {
@@ -548,6 +551,7 @@ MSG_PROCESS_RETURN tls_process_cert_verify(SSL *s, PACKET *pkt)
             fprintf(stdout, "client_cyclecount: %lu\n", s->client_cyclecount);
     }
 #endif
+    THOM_print_time_since_start(s, "CERT VERIFIED");
 
     ret = MSG_PROCESS_CONTINUE_READING;
  err:
@@ -635,6 +639,8 @@ int tls_construct_finished(SSL *s, WPACKET *pkt)
                finish_md_len);
         s->s3->previous_server_finished_len = finish_md_len;
     }
+
+    THOM_print_time_since_start(s, "SENT FINISHED");
 
     return 1;
 }

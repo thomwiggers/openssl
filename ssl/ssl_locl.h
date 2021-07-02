@@ -1478,6 +1478,8 @@ struct ssl_st {
 
     uint64_t server_cyclecount;
     uint64_t client_cyclecount;
+
+    struct timespec start_time;
 };
 
 /*
@@ -2706,6 +2708,8 @@ void ssl_comp_free_compression_methods_int(void);
 
 /* ssl_mcnf.c */
 void ssl_ctx_system_config(SSL_CTX *ctx);
+
+void THOM_print_time_since_start(const SSL *s, const char* label);
 
 # else /* OPENSSL_UNIT_TEST */
 

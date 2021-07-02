@@ -3598,6 +3598,7 @@ void SSL_set_accept_state(SSL *s)
     s->handshake_func = s->method->ssl_accept;
     clear_ciphers(s);
     s->server_cyclecount = 0;
+    timespec_get(&s->start_time, TIME_UTC);
 }
 
 void SSL_set_connect_state(SSL *s)
@@ -3608,6 +3609,14 @@ void SSL_set_connect_state(SSL *s)
     s->handshake_func = s->method->ssl_connect;
     clear_ciphers(s);
     s->client_cyclecount = 0;
+    timespec_get(&s->start_time, TIME_UTC);
+}
+
+void THOM_print_time_since_start(const SSL *s, const char* label) {
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    uint64_t time_spent = 1000000000ULL * (now.tv_sec - s->start_time.tv_sec) + (now.tv_nsec - s->start_time.tv_nsec);
+    printf("%s: %" PRIu64 " ns\n", label, time_spent);
 }
 
 int ssl_undefined_function(SSL *s)
